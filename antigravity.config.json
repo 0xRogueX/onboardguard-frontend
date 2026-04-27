@@ -1,0 +1,15 @@
+{
+  "framework": "angular",
+  "outputDir": "src/app",
+  "mode": "auto",
+  "watch": true,
+  "mcpServers": {
+    "stitch": {
+      "serverUrl": "https://stitch.googleapis.com/mcp",
+      "headers": {
+        "X-Goog-Api-Key": "AQ.Ab8RN6LVthbc3JoLEpoUn0dlsFd-ndgUNeGDQRE9AXEeai2dNg"
+      }
+    }
+}
+}
+
