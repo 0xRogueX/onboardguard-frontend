@@ -1,0 +1,71 @@
+<div class="min-h-screen bg-[#050505] flex items-center justify-center p-6 font-['Inter'] relative overflow-hidden selection:bg-indigo-500/30">
+  
+  <!-- Subtle Grid Background -->
+  <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20 z-0"></div>
+  
+  <!-- Ambient Glow -->
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
+  <div class="max-w-[420px] w-full relative z-10">
+    
+    <!-- Header -->
+    <div class="mb-10 text-center animate-in fade-in slide-in-from-top-4 duration-1000">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/50 shadow-2xl shadow-indigo-900/20 mb-6 relative overflow-hidden">
+        <div class="absolute inset-0 bg-indigo-500/10"></div>
+        <img src="/onboardguard_logo_1777340930385.png" class="w-8 h-8 object-contain brightness-150 relative z-10" alt="Logo">
+      </div>
+      <h1 class="text-3xl font-black text-white tracking-tight">System Access</h1>
+      <p class="text-slate-400 mt-2 text-sm font-medium tracking-wide uppercase">Enterprise Command Center</p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="bg-slate-900/60 backdrop-blur-2xl rounded-3xl border border-slate-800/60 p-8 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] relative animate-in zoom-in-95 duration-700 delay-150 fill-mode-both">
+      
+      <!-- Top edge highlight -->
+      <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"></div>
+
+      <div *ngIf="errorMessage()" class="mb-6 p-4 bg-red-900/20 border border-red-500/30 rounded-xl text-red-400 text-xs font-bold flex items-center justify-center gap-2 animate-shake">
+        <span class="material-symbols-outlined text-[16px]">gpp_bad</span>
+        {{ errorMessage() }}
+      </div>
+
+      <form (submit)="onLogin()" class="space-y-6">
+        <div class="space-y-5">
+          <div class="space-y-2">
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] px-1 block">Operator ID</label>
+            <div class="relative group">
+              <input type="email" name="email" [(ngModel)]="credentials.email" placeholder="admin@system.local" required
+                class="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-slate-200 placeholder:text-slate-600 focus:border-indigo-500/50 focus:bg-slate-900 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-mono">
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] px-1 block">Security Clearance</label>
+            <div class="relative group">
+              <input type="password" name="password" [(ngModel)]="credentials.password" placeholder="••••••••" required
+                class="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-slate-200 placeholder:text-slate-600 focus:border-indigo-500/50 focus:bg-slate-900 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-mono">
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="isLoading()"
+          class="w-full py-4 mt-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[11px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-900/30 transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:hover:bg-indigo-600 flex items-center justify-center gap-3">
+          <span *ngIf="isLoading()" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+          <span *ngIf="!isLoading()" class="material-symbols-outlined text-[18px]">fingerprint</span>
+          {{ isLoading() ? 'Verifying Identity...' : 'Authorize Access' }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Footer Warning -->
+    <div class="mt-8 text-center animate-in fade-in duration-1000 delay-300 fill-mode-both">
+      <div class="flex items-center justify-center gap-2 text-slate-600 text-[10px] font-black uppercase tracking-widest mb-1">
+        <span class="material-symbols-outlined text-[14px]">security</span>
+        <span>Restricted Area</span>
+      </div>
+      <p class="text-slate-600/70 text-[10px] font-medium tracking-wide">
+        All access attempts are logged and monitored.
+      </p>
+    </div>
+  </div>
+</div>

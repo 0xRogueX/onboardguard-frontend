@@ -1,0 +1,56 @@
+<div class="min-h-screen bg-slate-50 flex items-center justify-center p-10">
+  <div class="max-w-2xl w-full bg-white rounded-[40px] shadow-2xl shadow-indigo-100 border border-slate-100 overflow-hidden">
+    <!-- Feedback Header -->
+    <div class="bg-red-50 p-10 border-b border-red-100">
+       <div class="flex items-center gap-4 text-red-600 mb-4">
+          <span class="material-symbols-outlined text-4xl">warning</span>
+          <h2 class="text-2xl font-black tracking-tight">Action Required: Address Proof</h2>
+       </div>
+       <p class="text-red-900/60 text-sm font-medium leading-relaxed">
+          Your previously submitted document was rejected because the <strong>address does not match</strong> your profile details and the <strong>image quality is too low</strong> for automated verification.
+       </p>
+    </div>
+
+    <!-- Re-upload Action Area -->
+    <div class="p-10 space-y-10">
+       <div class="space-y-4">
+          <h3 cxlass="text-xs font-black text-slate-400 uppercase tracking-widest">Requirement Checklist</h3>
+          <div class="grid grid-cols-2 gap-4">
+             <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <span class="material-symbols-outlined text-green-500 text-sm">check_circle</span>
+                <span class="text-xs font-bold text-slate-700">Recent (Last 3 months)</span>
+             </div>
+             <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <span class="material-symbols-outlined text-green-500 text-sm">check_circle</span>
+                <span class="text-xs font-bold text-slate-700">Full page visible</span>
+             </div>
+             <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <span class="material-symbols-outlined text-green-500 text-sm">check_circle</span>
+                <span class="text-xs font-bold text-slate-700">Clear text (No glare)</span>
+             </div>
+             <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <span class="material-symbols-outlined text-green-500 text-sm">check_circle</span>
+                <span class="text-xs font-bold text-slate-700">PDF or JPG only</span>
+             </div>
+          </div>
+       </div>
+
+       <!-- Dropzone -->
+       <div class="bg-indigo-50/30 border-2 border-dashed border-indigo-200 rounded-[32px] p-12 text-center space-y-4 hover:border-primary/50 transition-colors cursor-pointer group">
+          <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-sm group-hover:scale-110 transition-transform">
+             <span class="material-symbols-outlined text-3xl text-primary">upload_file</span>
+          </div>
+          <div>
+             <p class="text-sm font-bold text-slate-800">Upload new Address Proof</p>
+             <p class="text-xs text-slate-400">Click to browse or drag and drop</p>
+          </div>
+       </div>
+
+       <!-- Footer Actions -->
+       <div class="flex justify-between items-center pt-6 border-t border-slate-50">
+          <button routerLink="/candidate/dashboard" class="text-xs font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors">Cancel</button>
+          <button class="px-10 py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-xl shadow-indigo-900/20 hover:bg-primary-container transition-all active:scale-95">Verify & Submit</button>
+       </div>
+    </div>
+  </div>
+</div>

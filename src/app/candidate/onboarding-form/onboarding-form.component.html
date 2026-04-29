@@ -1,0 +1,200 @@
+<div class="min-h-screen bg-slate-50 flex flex-col relative">
+  <!-- Progress Header -->
+  <header class="bg-white border-b sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+          <span class="material-symbols-outlined">how_to_reg</span>
+        </div>
+        <div>
+          <h1 class="text-lg font-black text-slate-800">Candidate Onboarding</h1>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Step {{currentStep}} of 4: {{stepTitles[currentStep-1]}}</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <div *ngFor="let i of [1,2,3,4]" class="w-10 h-1.5 rounded-full transition-all duration-500" 
+             [class.bg-primary]="i <= currentStep" [class.bg-slate-100]="i > currentStep"></div>
+      </div>
+
+      <button routerLink="/candidate/dashboard" class="text-slate-400 hover:text-slate-600 transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-4xl mx-auto w-full py-12 px-6">
+    <!-- Messages -->
+    <div *ngIf="errorMessage" class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+      <span class="material-symbols-outlined">error</span>
+      <p class="text-sm font-bold">{{ errorMessage }}</p>
+    </div>
+    <div *ngIf="successMessage" class="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+      <span class="material-symbols-outlined">check_circle</span>
+      <p class="text-sm font-bold">{{ successMessage }}</p>
+    </div>
+
+    <!-- Step 1: Personal Profile -->
+    <div *ngIf="currentStep === 1" class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div class="space-y-2">
+        <h2 class="text-2xl font-black text-slate-900">Personal Details</h2>
+        <p class="text-slate-500 text-sm">Please provide your legal name and contact information exactly as it appears on your documents.</p>
+      </div>
+
+      <form [formGroup]="personalForm" class="grid grid-cols-2 gap-6 bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">First Name</label>
+          <input type="text" formControlName="firstName" placeholder="e.g. Alex" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Last Name</label>
+          <input type="text" formControlName="lastName" placeholder="e.g. Thompson" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Date of Birth</label>
+          <input type="date" formControlName="dateOfBirth" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all text-slate-600">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Gender</label>
+          <select formControlName="gender" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all text-slate-600 bg-white">
+             <option value="">Select Gender</option>
+             <option value="MALE">Male</option>
+             <option value="FEMALE">Female</option>
+             <option value="OTHER">Other</option>
+          </select>
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Nationality</label>
+          <input type="text" formControlName="nationality" placeholder="e.g. Indian" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">PAN Number</label>
+          <input type="text" formControlName="panNumber" placeholder="ABCDE1234F" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2 col-span-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Address Line 1</label>
+          <input type="text" formControlName="addressLine1" placeholder="Flat No., Street Name" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">City</label>
+          <input type="text" formControlName="addressCity" placeholder="City" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">State</label>
+          <input type="text" formControlName="addressState" placeholder="State" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Pincode</label>
+          <input type="text" formControlName="addressPincode" placeholder="123456" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+      </form>
+    </div>
+
+    <!-- Step 2: Professional Details -->
+    <div *ngIf="currentStep === 2" class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div class="space-y-2">
+        <h2 class="text-2xl font-black text-slate-900">Professional Details</h2>
+        <p class="text-slate-500 text-sm">Tell us about your professional background and qualifications.</p>
+      </div>
+
+      <form [formGroup]="professionalForm" class="grid grid-cols-2 gap-6 bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Current Organization</label>
+          <input type="text" formControlName="currentOrganization" placeholder="Company Name" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Current Designation (Job Title)</label>
+          <input type="text" formControlName="currentDesignation" placeholder="e.g. Software Engineer" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Total Experience (Years)</label>
+          <input type="number" formControlName="totalExperienceYears" placeholder="e.g. 5" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Previous Organization</label>
+          <input type="text" formControlName="previousOrganization" placeholder="Previous Company Name" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Highest Qualification</label>
+          <input type="text" formControlName="highestQualification" placeholder="e.g. B.Tech" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">University Name</label>
+          <input type="text" formControlName="universityName" placeholder="University" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+      </form>
+    </div>
+
+    <!-- Step 3: Document Upload -->
+    <div *ngIf="currentStep === 3" class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div class="space-y-2">
+        <h2 class="text-2xl font-black text-slate-900">Document Upload</h2>
+        <p class="text-slate-500 text-sm">Upload a high-quality scan of your National ID or Passport.</p>
+      </div>
+
+      <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+         <div class="space-y-2">
+           <label class="text-xs font-bold text-slate-500 uppercase">Document Type</label>
+           <!-- Need FormsModule for ngModel here if we use two way binding, or just use native event or formControl -->
+           <select (change)="documentType = $any($event.target).value" [value]="documentType" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all text-slate-600 bg-white">
+              <option value="AADHAAR_CARD">Aadhaar Card</option>
+              <option value="PAN_CARD">PAN Card</option>
+              <option value="PASSPORT">Passport</option>
+              <option value="HIGHEST_DEGREE_CERTIFICATE">Highest Degree Certificate</option>
+              <option value="LAST_EXPERIENCE_LETTER">Experience Letter</option>
+           </select>
+         </div>
+
+         <div class="relative bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-12 text-center space-y-4 hover:border-primary/50 transition-colors cursor-pointer group">
+           <input type="file" (change)="onFileSelected($event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+           <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto group-hover:bg-indigo-50 transition-colors">
+             <span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-primary transition-colors">cloud_upload</span>
+           </div>
+           <div>
+             <p class="text-sm font-bold text-slate-700">Drag and drop your file here</p>
+             <p class="text-xs text-slate-400">or <span class="text-primary underline">browse files</span> from your device</p>
+           </div>
+           <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ selectedFile ? selectedFile.name : 'Supported: JPG, PNG, PDF (Max 10MB)' }}</p>
+         </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Final Confirmation & Submit -->
+    <div *ngIf="currentStep === 4" class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+       <div class="space-y-2">
+         <h2 class="text-2xl font-black text-slate-900">Review & Submit</h2>
+         <p class="text-slate-500 text-sm">Review your details and submit your application for verification.</p>
+       </div>
+
+       <div class="bg-indigo-50 border border-indigo-100 rounded-3xl p-8 text-center space-y-6">
+          <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm">
+             <span class="material-symbols-outlined text-4xl text-emerald-500">verified</span>
+          </div>
+          <div class="space-y-2">
+             <h3 class="text-lg font-black text-slate-800">Ready to Submit!</h3>
+             <p class="text-sm text-slate-500">Your details and documents have been uploaded successfully. Click submit to finish your onboarding process.</p>
+          </div>
+       </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="mt-12 flex justify-between items-center">
+      <button (click)="prevStep()" [disabled]="currentStep === 1 || isLoading" 
+              class="px-8 py-3 rounded-xl font-bold text-sm text-slate-400 hover:text-slate-600 disabled:opacity-0 transition-all flex items-center gap-2">
+        <span class="material-symbols-outlined">arrow_back</span> Back
+      </button>
+      <button *ngIf="currentStep < 4" (click)="nextStep()" [disabled]="isLoading"
+              class="px-10 py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-xl shadow-indigo-900/20 hover:bg-primary/90 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-70">
+        <span *ngIf="isLoading" class="material-symbols-outlined animate-spin">progress_activity</span>
+        {{ isLoading ? 'Saving...' : 'Continue' }}
+        <span *ngIf="!isLoading" class="material-symbols-outlined">arrow_forward</span>
+      </button>
+      <button *ngIf="currentStep === 4" (click)="submitApplication()" [disabled]="isLoading"
+              class="px-10 py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm shadow-xl shadow-emerald-500/20 hover:bg-emerald-600 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-70">
+        <span *ngIf="isLoading" class="material-symbols-outlined animate-spin">progress_activity</span>
+        {{ isLoading ? 'Submitting...' : 'Submit Application' }}
+        <span *ngIf="!isLoading" class="material-symbols-outlined">done_all</span>
+      </button>
+    </div>
+  </main>
+</div>

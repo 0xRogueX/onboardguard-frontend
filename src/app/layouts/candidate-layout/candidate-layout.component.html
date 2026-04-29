@@ -1,0 +1,52 @@
+<div class="flex h-screen bg-slate-50">
+  <!-- Candidate Sidebar -->
+  <aside class="w-64 bg-slate-900 flex flex-col shadow-xl shadow-slate-900/20 relative overflow-hidden">
+    <!-- Decorative background glow -->
+    <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-br from-indigo-600/20 to-transparent blur-3xl rounded-full -translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+    
+    <div class="p-6 relative z-10">
+      <div class="flex items-center gap-3 text-white font-black text-xl tracking-tight">
+        <img src="/onboardguard_logo_1777340930385.png" class="w-8 h-8 object-contain brightness-0 invert" alt="Logo">
+        OnboardGuard
+      </div>
+    </div>
+    
+    <nav class="flex-1 px-4 space-y-2 relative z-10">
+      <a routerLink="/candidate/dashboard" routerLinkActive="bg-white/10 text-white shadow-lg shadow-black/10" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white rounded-xl font-bold transition-all hover:bg-white/5">
+        <span class="material-symbols-outlined text-[20px]">dashboard</span>
+        Dashboard
+      </a>
+      <a routerLink="/candidate/application-tracking" routerLinkActive="bg-white/10 text-white shadow-lg shadow-black/10" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white rounded-xl font-bold transition-all hover:bg-white/5">
+        <span class="material-symbols-outlined text-[20px]">track_changes</span>
+        Application Tracking
+      </a>
+      <a routerLink="/candidate/onboarding" routerLinkActive="bg-white/10 text-white shadow-lg shadow-black/10" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white rounded-xl font-bold transition-all hover:bg-white/5">
+        <span class="material-symbols-outlined text-[20px]">assignment</span>
+        My Application
+      </a>
+      <a routerLink="/candidate/re-upload" routerLinkActive="bg-white/10 text-white shadow-lg shadow-black/10" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white rounded-xl font-bold transition-all hover:bg-white/5">
+        <span class="material-symbols-outlined text-[20px]">upload_file</span>
+        Re-upload Docs
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white rounded-xl font-bold transition-all hover:bg-white/5">
+        <span class="material-symbols-outlined text-[20px]">description</span>
+        Documents
+      </a>
+    </nav>
+    
+    <div class="p-6 border-t border-white/10 relative z-10 bg-slate-900/50 backdrop-blur-sm">
+       <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-indigo-500/30">AT</div>
+          <div class="flex flex-col">
+             <span class="text-xs font-bold text-white">Alex Thompson</span>
+             <span class="text-[10px] text-indigo-300 font-medium">Candidate</span>
+          </div>
+       </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto">
+    <router-outlet></router-outlet>
+  </main>
+</div>
