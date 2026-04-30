@@ -1,6 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { CandidateService } from '../../services/candidate.service';
+import { CandidateStatusDto, DocumentDto, OnboardingStatus } from '../../models';
 
 interface Step {
   title: string;
@@ -14,30 +17,98 @@ interface Update {
   time: string;
 }
 
+interface StepBlueprint {
+  title: string;
+  description: string;
+  icon: string;
+}
+
+const DASHBOARD_STEPS: StepBlueprint[] = [
+  {
+    title: 'Personal Details',
+    description: 'Basic profile and contact details',
+    icon: 'person'
+  },
+  {
+    title: 'Professional Details',
+    description: 'Employment and education details',
+    icon: 'work'
+  },
+  {
+    title: 'Document Uploads',
+    description: 'Identity and supporting documents',
+    icon: 'fingerprint'
+  },
+  {
+    title: 'Screening Review',
+    description: 'Officer and screening verification',
+    icon: 'search_check'
+  },
+  {
+    title: 'Final Decision',
+    description: 'Approved or action required',
+    icon: 'verified_user'
+  }
+];
+
 @Component({
   selector: 'app-candidate-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
-export class CandidateDashboardComponent {
-  candidateName = 'Alex';
+export class CandidateDashboardComponent implements OnInit {
+  private authService = inject(AuthService);
+  private candidateService = inject(CandidateService);
 
-  steps = signal<Step[]>([
-    { title: 'Personal Information', description: 'Basic profile and contact details', icon: 'person', status: 'completed' },
-    { title: 'Identity Verification', description: 'Passport or National ID upload', icon: 'fingerprint', status: 'completed' },
-    { title: 'Address Proof', description: 'Utility bill or bank statement', icon: 'home', status: 'error' },
-    { title: 'Employment History', description: 'Past 5 years of experience', icon: 'work', status: 'in-progress' },
-    { title: 'Background Check', description: 'Criminal and credit history', icon: 'search_check', status: 'pending' },
-  ]);
+  profileStatus = signal<CandidateStatusDto | null>(null);
+  rejectedDocuments = signal<DocumentDto[]>([]);
+  isLoading = signal(true);
+  errorMessage = signal('');
 
-  updates = signal<Update[]>([
-    { title: 'Address proof rejected', time: '2 hours ago' },
-    { title: 'Identity verification approved', time: 'Yesterday, 4:30 PM' },
-    { title: 'Application submitted', time: '2 days ago' },
-    { title: 'Welcome to OnboardGuard', time: '3 days ago' },
-  ]);
+  candidateName = computed(() => this.authService.currentUser()?.fullName || 'Candidate');
+  candidateInitials = computed(() => this.getInitials(this.candidateName()));
+  statusLabel = computed(() => this.getStatusLabel(this.profileStatus()?.onboardingStatus));
+  progressLabel = computed(() => `${this.getProgressPercent()}% Complete`);
+  steps = computed<Step[]>(() => this.buildSteps(this.profileStatus()?.onboardingStatus || null));
+  updates = computed<Update[]>(() => this.buildUpdates());
+
+  ngOnInit() {
+    this.loadDashboardData();
+  }
+
+  loadDashboardData() {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    let remainingRequests = 2;
+    const complete = () => {
+      remainingRequests -= 1;
+      if (remainingRequests <= 0) {
+        this.isLoading.set(false);
+      }
+    };
+
+    this.candidateService.getProfileStatus().subscribe({
+      next: (response) => {
+        this.profileStatus.set(response.data);
+        complete();
+      },
+      error: (err) => {
+        this.errorMessage.set(err.error?.message || 'Unable to load your onboarding status.');
+        complete();
+      }
+    });
+
+    this.candidateService.getRejectedDocuments().subscribe({
+      next: (response) => {
+        this.rejectedDocuments.set(response.data);
+        complete();
+      },
+      error: () => complete()
+    });
+  }
 
   getStatusBg(status: string): string {
     switch (status) {
@@ -55,5 +126,210 @@ export class CandidateDashboardComponent {
       case 'error': return 'text-rose-700 bg-rose-50 border border-rose-200';
       default: return 'text-slate-600 bg-slate-50 border border-slate-200';
     }
+  }
+
+  private buildSteps(status: OnboardingStatus | null): Step[] {
+    const stageIndex = this.getStageIndex(status);
+    const issueStepIndex = this.getIssueStepIndex(status);
+    const finalSuccess = this.isFinalSuccess(status);
+
+    return DASHBOARD_STEPS.map((step, index) => {
+      let stepStatus: Step['status'] = 'pending';
+
+      if (issueStepIndex !== null && index === issueStepIndex) {
+        stepStatus = 'error';
+      } else if (finalSuccess) {
+        stepStatus = 'completed';
+      } else if (index < stageIndex) {
+        stepStatus = 'completed';
+      } else if (index === stageIndex) {
+        stepStatus = 'in-progress';
+      }
+
+      return {
+        ...step,
+        status: stepStatus
+      };
+    });
+  }
+
+  private buildUpdates(): Update[] {
+    const documents = [...this.rejectedDocuments()].sort(
+      (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+    );
+
+    if (documents.length > 0) {
+      return documents.slice(0, 4).map(doc => ({
+        title: `${this.formatDocumentName(doc.candidateDocumentType)} review required${doc.rejectionReason ? `: ${doc.rejectionReason}` : ''}`,
+        time: this.formatDateTime(doc.uploadedAt)
+      }));
+    }
+
+    const status = this.profileStatus()?.onboardingStatus;
+    if (!status) {
+      return [
+        { title: 'Loading latest status from backend', time: 'Live data' }
+      ];
+    }
+
+    return [
+      { title: `Current onboarding status: ${this.getStatusLabel(status)}`, time: 'Live data' },
+      { title: this.getTimelineMessage(status), time: 'Updated by backend' }
+    ];
+  }
+
+  private getProgressPercent(): number {
+    const status = this.profileStatus()?.onboardingStatus;
+    if (!status) {
+      return 0;
+    }
+
+    if (this.isFinalSuccess(status)) {
+      return 100;
+    }
+
+    if (status === OnboardingStatus.DOCUMENTS_REJECTED) {
+      return 60;
+    }
+
+    const stageIndex = this.getStageIndex(status);
+    return Math.min(100, Math.round(((stageIndex + 1) / DASHBOARD_STEPS.length) * 100));
+  }
+
+  private getStageIndex(status: OnboardingStatus | null | undefined): number {
+    switch (status) {
+      case OnboardingStatus.REGISTERED:
+        return 0;
+      case OnboardingStatus.PERSONAL_SAVED:
+        return 1;
+      case OnboardingStatus.PROFESSIONAL_SAVED:
+        return 2;
+      case OnboardingStatus.DOCUMENTS_UPLOADED:
+        return 3;
+      case OnboardingStatus.DOCUMENTS_REJECTED:
+        return 2;
+      case OnboardingStatus.FORM_SUBMITTED:
+      case OnboardingStatus.SCREENING_PENDING:
+      case OnboardingStatus.SCREENING_IN_PROGRESS:
+      case OnboardingStatus.DOCUMENTS_UNDER_REVIEW:
+      case OnboardingStatus.CASE_IN_REVIEW:
+      case OnboardingStatus.SCREENING_CLEARED:
+      case OnboardingStatus.FLAGGED:
+      case OnboardingStatus.REJECTED:
+      case OnboardingStatus.APPROVED:
+        return 4;
+      default:
+        return 0;
+    }
+  }
+
+  private getIssueStepIndex(status: OnboardingStatus | null | undefined): number | null {
+    switch (status) {
+      case OnboardingStatus.DOCUMENTS_REJECTED:
+        return 2;
+      case OnboardingStatus.FLAGGED:
+      case OnboardingStatus.REJECTED:
+        return 4;
+      default:
+        return null;
+    }
+  }
+
+  private isFinalSuccess(status: OnboardingStatus | null | undefined): boolean {
+    return status === OnboardingStatus.APPROVED || status === OnboardingStatus.SCREENING_CLEARED;
+  }
+
+  private isFinalIssue(status: OnboardingStatus | null | undefined): boolean {
+    return status === OnboardingStatus.FLAGGED
+      || status === OnboardingStatus.DOCUMENTS_REJECTED
+      || status === OnboardingStatus.REJECTED;
+  }
+
+  private getStatusLabel(status: OnboardingStatus | null | undefined): string {
+    if (!status) {
+      return 'Loading';
+    }
+
+    if (this.isFinalSuccess(status)) {
+      return 'Approved';
+    }
+
+    if (this.isFinalIssue(status)) {
+      return 'Action Required';
+    }
+
+    return this.formatStatus(status);
+  }
+
+  private getTimelineMessage(status: OnboardingStatus): string {
+    switch (status) {
+      case OnboardingStatus.REGISTERED:
+        return 'Your profile has been created and is ready for details.';
+      case OnboardingStatus.PERSONAL_SAVED:
+        return 'Personal details were saved successfully.';
+      case OnboardingStatus.PROFESSIONAL_SAVED:
+        return 'Professional details were saved successfully.';
+      case OnboardingStatus.DOCUMENTS_UPLOADED:
+        return 'Documents have been uploaded and are waiting for review.';
+      case OnboardingStatus.FORM_SUBMITTED:
+        return 'Your onboarding form has been submitted.';
+      case OnboardingStatus.SCREENING_PENDING:
+        return 'Screening is queued for review.';
+      case OnboardingStatus.SCREENING_IN_PROGRESS:
+        return 'Screening is currently in progress.';
+      case OnboardingStatus.DOCUMENTS_UNDER_REVIEW:
+        return 'Documents are under compliance review.';
+      case OnboardingStatus.CASE_IN_REVIEW:
+        return 'A case is being reviewed by the officer team.';
+      case OnboardingStatus.SCREENING_CLEARED:
+        return 'Screening has been cleared.';
+      case OnboardingStatus.APPROVED:
+        return 'Your onboarding has been approved.';
+      case OnboardingStatus.FLAGGED:
+        return 'Your profile has been flagged for manual review.';
+      case OnboardingStatus.DOCUMENTS_REJECTED:
+        return 'Some documents need to be re-uploaded.';
+      case OnboardingStatus.REJECTED:
+        return 'Your onboarding was rejected.';
+      default:
+        return 'Your onboarding status has been updated.';
+    }
+  }
+
+  private formatDocumentName(value: string): string {
+    return value
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, ch => ch.toUpperCase());
+  }
+
+  private formatDateTime(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return 'Recently';
+    }
+
+    return date.toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  }
+
+  private formatStatus(value: string): string {
+    return value
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, ch => ch.toUpperCase());
+  }
+
+  private getInitials(name: string): string {
+    return name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part.charAt(0).toUpperCase())
+      .join('') || 'C';
   }
 }

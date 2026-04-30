@@ -9,7 +9,7 @@
       <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Verification Timeline</h3>
       <div class="flex items-center gap-3 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full">
          <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
-         <span class="text-xs font-bold">Under Review</span>
+         <span class="text-xs font-bold">{{currentStatus() || 'Loading'}}</span>
       </div>
     </div>
 

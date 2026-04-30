@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-candidate-layout',
@@ -9,4 +10,19 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './candidate-layout.component.html',
   styleUrl: './candidate-layout.component.css'
 })
-export class CandidateLayoutComponent {}
+export class CandidateLayoutComponent {
+  private authService = inject(AuthService);
+
+  currentUser = computed(() => this.authService.currentUser());
+  displayName = computed(() => this.currentUser()?.fullName || 'Candidate');
+  initials = computed(() => this.getInitials(this.displayName()));
+
+  private getInitials(name: string): string {
+    return name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part.charAt(0).toUpperCase())
+      .join('') || 'C';
+  }
+}

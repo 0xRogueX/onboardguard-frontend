@@ -1,5 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AdminService } from '../../services/admin.service';
+import { DashboardStatsDto } from '../../models';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-approval-dashboard',
@@ -8,35 +11,49 @@ import { CommonModule } from '@angular/common';
   templateUrl: './approval-dashboard.component.html',
   styleUrl: './approval-dashboard.component.css'
 })
-export class ApprovalDashboardComponent {
-  approvals = [
-    { 
-      org: 'Global Bank', 
-      title: 'KYC Policy Update (Q2)', 
-      type: 'Configuration', 
-      requestedBy: 'Sarah Jenkins', 
-      time: '1 hour ago' 
-    },
-    { 
-      org: 'Fintech Solutions', 
-      title: 'Officer Access Escalation', 
-      type: 'Security', 
-      requestedBy: 'Michael Chen', 
-      time: '3 hours ago' 
-    },
-    { 
-      org: 'System Core', 
-      title: 'Batch Re-screening Trigger', 
-      type: 'Automated', 
-      requestedBy: 'System Scheduler', 
-      time: '5 hours ago' 
-    },
-  ];
+export class ApprovalDashboardComponent implements OnInit {
+  private adminService = inject(AdminService);
+  private authService = inject(AuthService);
 
-  performance = [
-    { name: 'Investigation Team A', load: 78, color: 'bg-indigo-500' },
-    { name: 'Compliance L2 Units', load: 42, color: 'bg-green-500' },
-    { name: 'Sanctions Processing', load: 91, color: 'bg-red-500' },
-    { name: 'Identity QA', load: 15, color: 'bg-orange-400' },
-  ];
+  approvals = signal<any[]>([]);
+  stats = signal<DashboardStatsDto | null>(null);
+  isLoading = signal(true);
+  displayName = computed(() => this.authService.currentUser()?.fullName || 'Admin');
+
+  ngOnInit() {
+    this.loadDashboard();
+  }
+
+  loadDashboard() {
+    this.isLoading.set(true);
+    this.adminService.getDashboardStats().subscribe({
+      next: (response) => this.stats.set(response.data),
+      error: () => this.stats.set(null)
+    });
+
+    this.adminService.getPendingApprovals().subscribe({
+      next: (response) => {
+        this.approvals.set(response.data);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.approvals.set([]);
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  reviewApproval(id: number, decision: 'APPROVE' | 'REJECT') {
+    this.adminService.reviewApproval(String(id), decision).subscribe({
+      next: () => this.loadDashboard()
+    });
+  }
+
+  getTitle(approval: any) {
+    return `${approval.actionType || 'REQUEST'} ${approval.targetEntityType || 'CHANGE'}`;
+  }
+
+  getPayloadSummary(approval: any) {
+    return Object.keys(approval.payload || {}).join(', ') || `Target #${approval.targetEntityId || approval.id}`;
+  }
 }

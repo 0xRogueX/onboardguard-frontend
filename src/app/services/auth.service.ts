@@ -39,13 +39,17 @@ export class AuthService {
           const userData: User = {
             email: response.data.email,
             fullName: response.data.fullName,
-            role: 'CANDIDATE',
+            role: this.normalizeRole('CANDIDATE'),
             token: response.data.token
           };
           this.setUser(userData);
         }
       })
     );
+  }
+
+  registerCandidate(candidateData: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/register/candidate`, candidateData);
   }
 
   loginStaff(credentials: any): Observable<any> {
@@ -55,7 +59,7 @@ export class AuthService {
           const userData: User = {
             email: response.data.email,
             fullName: response.data.fullName,
-            role: response.data.roleCode, // e.g., ADMIN, SUPER_ADMIN, L1_OFFICER, L2_OFFICER
+            role: this.normalizeRole(response.data.roleCode),
             token: response.data.token
           };
           this.setUser(userData);
@@ -79,28 +83,68 @@ export class AuthService {
   }
 
   private setUser(user: User) {
+    const normalizedUser = {
+      ...user,
+      role: this.normalizeRole(user.role)
+    };
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem('onboardguard_user', JSON.stringify(user));
+      localStorage.setItem('onboardguard_user', JSON.stringify(normalizedUser));
     }
-    this.userSignal.set(user);
-    this.redirectBasedOnRole(user.role);
+    this.userSignal.set(normalizedUser);
+    this.redirectBasedOnRole(normalizedUser.role);
   }
 
   private loadUserFromStorage(): User | null {
     if (isPlatformBrowser(this.platformId)) {
       const data = localStorage.getItem('onboardguard_user');
-      return data ? JSON.parse(data) : null;
+      if (!data) {
+        return null;
+      }
+
+      const parsed = JSON.parse(data) as User;
+      return {
+        ...parsed,
+        role: this.normalizeRole(parsed.role)
+      };
     }
     return null;
   }
 
   private redirectBasedOnRole(role: string) {
-    if (role === 'CANDIDATE') {
+    const normalizedRole = this.normalizeRole(role);
+
+    if (normalizedRole === 'CANDIDATE') {
       this.router.navigate(['/candidate/dashboard']);
-    } else if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
+    } else if (normalizedRole === 'ADMIN' || normalizedRole === 'SUPER_ADMIN') {
       this.router.navigate(['/admin/users']);
-    } else if (role === 'L1_OFFICER' || role === 'L2_OFFICER') {
+    } else if (normalizedRole === 'L1_OFFICER' || normalizedRole === 'L2_OFFICER') {
       this.router.navigate(['/officer/alerts']);
+    } else {
+      this.router.navigate(['/staff/login']);
+    }
+  }
+
+  private normalizeRole(role: string): string {
+    switch ((role || '').toUpperCase()) {
+      case 'ROLE_CANDIDATE':
+      case 'CANDIDATE':
+        return 'CANDIDATE';
+      case 'ROLE_ADMIN':
+      case 'ADMIN':
+        return 'ADMIN';
+      case 'ROLE_SUPER_ADMIN':
+      case 'SUPER_ADMIN':
+        return 'SUPER_ADMIN';
+      case 'ROLE_OFFICER_L1':
+      case 'ROLE_L1_OFFICER':
+      case 'L1_OFFICER':
+        return 'L1_OFFICER';
+      case 'ROLE_OFFICER_L2':
+      case 'ROLE_L2_OFFICER':
+      case 'L2_OFFICER':
+        return 'L2_OFFICER';
+      default:
+        return role?.startsWith('ROLE_') ? role.replace(/^ROLE_/, '') : role;
     }
   }
 }

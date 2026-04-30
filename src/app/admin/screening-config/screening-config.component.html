@@ -31,8 +31,8 @@
           <label class="block space-y-3">
             <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Allowed Documents</span>
             <div class="flex flex-wrap gap-2">
-              <span *ngFor="let doc of allowedDocs" class="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-2 hover:border-primary/30 transition-all">
-                {{doc}}
+              <span *ngFor="let config of configs()" class="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-2 hover:border-primary/30 transition-all">
+                {{config.configKey}}
                 <button class="text-slate-300 hover:text-red-500"><span class="material-symbols-outlined text-[16px]">close</span></button>
               </span>
               <button class="px-4 py-2 border-2 border-dashed border-slate-200 rounded-xl text-xs font-black text-primary flex items-center gap-2 hover:border-primary/50 transition-all">
@@ -83,14 +83,14 @@
       </div>
 
       <div class="space-y-8 max-w-2xl">
-        <div *ngFor="let rule of riskRules" class="flex items-center gap-10 group">
-          <span class="text-xs font-black text-slate-600 w-48 uppercase tracking-widest">{{rule.name}}</span>
+        <div *ngFor="let rule of configs()" class="flex items-center gap-10 group">
+          <span class="text-xs font-black text-slate-600 w-48 uppercase tracking-widest">{{rule.configKey}}</span>
           <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner relative">
-            <div class="h-full bg-primary shadow-[0_0_8px_rgba(36,56,156,0.4)] transition-all duration-1000" [style.width.%]="rule.weight"></div>
+            <div class="h-full bg-primary shadow-[0_0_8px_rgba(36,56,156,0.4)] transition-all duration-1000" [style.width.%]="+rule.configValue || 0"></div>
           </div>
           <div class="relative">
-             <input type="number" [value]="rule.weight" class="w-20 border-2 border-slate-100 rounded-xl py-2 px-3 text-sm font-black text-center text-slate-800 focus:border-primary outline-none transition-all">
-             <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-[8px] font-black text-slate-400 uppercase tracking-widest bg-white px-1">Weight</span>
+             <input [value]="displayValue(rule)" class="w-32 border-2 border-slate-100 rounded-xl py-2 px-3 text-sm font-black text-center text-slate-800 focus:border-primary outline-none transition-all">
+             <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-[8px] font-black text-slate-400 uppercase tracking-widest bg-white px-1">{{rule.configType}}</span>
           </div>
         </div>
       </div>

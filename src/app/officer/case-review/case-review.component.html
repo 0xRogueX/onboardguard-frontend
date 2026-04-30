@@ -1,107 +1,47 @@
-<div class="h-screen flex bg-[#f5f7f9]">
-  <!-- Case Navigation Sidebar -->
-  <aside class="w-80 bg-white border-r flex flex-col shadow-sm">
-    <div class="p-6 border-b flex justify-between items-center bg-slate-50/50">
-       <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Case Queue (L2)</span>
-       <button class="material-symbols-outlined text-slate-400">filter_alt</button>
+<div class="p-8 bg-slate-50 min-h-screen">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-slate-800">Case Review Workspace</h1>
+    <button (click)="loadCases()" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+      Refresh Queue
+    </button>
+  </div>
+
+  <div *ngIf="isLoading()" class="flex justify-center p-12">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+  </div>
+
+  <div *ngIf="!isLoading() && cases().length === 0" class="text-center py-16 bg-white rounded-xl shadow-sm border border-slate-100">
+    <p class="text-slate-500 font-medium">No pending cases available at the moment.</p>
+  </div>
+
+  <div *ngIf="!isLoading() && cases().length > 0" class="grid gap-6">
+    <div *ngFor="let c of cases()" class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all hover:shadow-md">
+      
+      <div>
+        <div class="flex items-center gap-3 mb-1">
+          <h3 class="text-lg font-semibold text-slate-800">Candidate #{{ c.candidateId }}</h3>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                [ngClass]="{
+                  'bg-red-100 text-red-700': getPriority(c) === 'HIGH',
+                  'bg-yellow-100 text-yellow-700': getPriority(c) === 'MEDIUM',
+                  'bg-green-100 text-green-700': getPriority(c) === 'LOW'
+                }">
+            {{ getPriority(c) }} Priority
+          </span>
+        </div>
+        <p class="text-sm text-slate-500">Case ID: <span class="font-mono text-slate-600">{{ c.id }}</span> • Created: {{ c.createdAt | date:'mediumDate' }}</p>
+      </div>
+
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <button (click)="resolveCase(c.id, 'CLEARED')" class="flex-1 md:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+          Clear Case
+        </button>
+        <button (click)="resolveCase(c.id, 'REJECTED')" class="flex-1 md:flex-none px-4 py-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg transition-colors shadow-sm">
+          Reject
+        </button>
+      </div>
+      
     </div>
-    <div class="flex-1 overflow-y-auto">
-       <div *ngFor="let item of caseList" class="p-4 border-b hover:bg-slate-50 cursor-pointer transition-all border-l-4 border-transparent" [class.border-primary]="item.id === currentCase.id" [class.bg-indigo-50]="item.id === currentCase.id">
-          <div class="flex justify-between items-start mb-1">
-             <span class="text-xs font-bold text-slate-400">#{{item.id}}</span>
-             <span class="text-[10px] font-black text-red-500 bg-red-50 px-1.5 py-0.5 rounded uppercase">{{item.risk}} Risk</span>
-          </div>
-          <h4 class="text-sm font-bold text-slate-800">{{item.name}}</h4>
-          <p class="text-[11px] text-slate-500 mt-1 line-clamp-1 italic">{{item.reason}}</p>
-       </div>
-    </div>
-  </aside>
-
-  <!-- Main Review Area -->
-  <main class="flex-1 flex flex-col overflow-hidden">
-    <!-- Case Header -->
-    <header class="h-20 bg-white border-b px-10 flex items-center justify-between shadow-sm z-10">
-       <div class="flex items-center gap-6">
-          <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-primary flex items-center justify-center font-bold text-lg border border-indigo-100 shadow-sm">
-             {{currentCase.name.charAt(0)}}
-          </div>
-          <div>
-             <h2 class="text-lg font-black text-slate-800 flex items-center gap-2">
-                {{currentCase.name}}
-                <span class="material-symbols-outlined text-green-500 text-sm">verified</span>
-             </h2>
-             <div class="flex items-center gap-3 mt-1">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-tighter">Escalated from L1: {{currentCase.escalationDate}}</span>
-                <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-tighter">Assigned to: You</span>
-             </div>
-          </div>
-       </div>
-       <div class="flex items-center gap-3">
-          <button class="px-6 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-xl font-bold text-sm hover:bg-red-100 transition-all active:scale-95">Reject Case</button>
-          <button class="px-6 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-200 hover:bg-primary-container transition-all active:scale-95">Approve Case</button>
-       </div>
-    </header>
-
-    <!-- 3-Column Layout -->
-    <div class="flex-1 overflow-hidden flex">
-       <!-- Left: Evidence & Documents -->
-       <section class="w-[45%] border-r overflow-y-auto p-8 space-y-8 bg-white/50">
-          <div>
-             <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Identity Documents</h3>
-             <div class="space-y-4">
-                <div *ngFor="let doc of currentCase.documents" class="bg-white border rounded-2xl p-4 shadow-sm group hover:border-primary transition-all cursor-pointer">
-                   <div class="flex justify-between items-start mb-3">
-                      <div class="flex items-center gap-3">
-                         <div class="p-2 bg-indigo-50 rounded-lg text-primary">
-                            <span class="material-symbols-outlined text-sm">description</span>
-                         </div>
-                         <div>
-                            <p class="text-sm font-bold text-slate-700">{{doc.title}}</p>
-                            <p class="text-[10px] text-slate-400">Uploaded: {{doc.date}}</p>
-                         </div>
-                      </div>
-                      <span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">open_in_new</span>
-                   </div>
-                   <div class="aspect-video bg-slate-100 rounded-xl overflow-hidden border border-slate-200 flex items-center justify-center group-hover:border-indigo-100 transition-all">
-                      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Document Preview Restricted</span>
-                   </div>
-                </div>
-             </div>
-          </div>
-       </section>
-
-       <!-- Middle: Screening Results -->
-       <section class="flex-1 overflow-y-auto p-8 space-y-8">
-          <div>
-             <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Risk Assessment</h3>
-             <div class="bg-white rounded-3xl border p-6 shadow-sm space-y-6">
-                <div class="flex justify-between items-center">
-                   <span class="text-sm font-bold text-slate-600">Composite Risk Score</span>
-                   <span class="text-2xl font-black text-red-500">{{currentCase.score}}%</span>
-                </div>
-                <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                   <div class="h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" [style.width.%]="currentCase.score"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                   <div *ngFor="let check of currentCase.checks" class="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                      <div class="flex justify-between mb-1">
-                         <span class="text-[10px] font-black text-slate-400 uppercase">{{check.name}}</span>
-                         <span [class]="'text-[10px] font-black uppercase ' + (check.passed ? 'text-green-500' : 'text-red-500')">{{check.passed ? 'PASS' : 'FAIL'}}</span>
-                      </div>
-                      <div class="text-xs font-bold text-slate-700">{{check.result}}</div>
-                   </div>
-                </div>
-             </div>
-          </div>
-
-          <div>
-             <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">L1 Investigation Notes</h3>
-             <div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-5 italic text-sm text-indigo-900 leading-relaxed">
-                "{{currentCase.notes}}"
-             </div>
-          </div>
-       </section>
-    </div>
-  </main>
+  </div>
 </div>

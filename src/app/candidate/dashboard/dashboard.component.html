@@ -2,12 +2,12 @@
   <!-- Status Overview -->
   <header class="flex justify-between items-end">
     <div class="space-y-2">
-      <h2 class="text-3xl font-black text-slate-900 tracking-tight">Welcome back, Alex</h2>
-      <p class="text-slate-500 font-medium">Your application is currently being reviewed by our compliance team.</p>
+      <h2 class="text-3xl font-black text-slate-900 tracking-tight">Welcome back, {{candidateName()}}</h2>
+      <p class="text-slate-500 font-medium">{{errorMessage() || 'Your application is being updated from live backend data.'}}</p>
     </div>
     <div class="flex items-center gap-3 bg-white px-6 py-3 rounded-2xl shadow-sm border border-slate-100">
       <span class="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></span>
-      <span class="text-sm font-bold text-slate-700">Under Review</span>
+      <span class="text-sm font-bold text-slate-700">{{statusLabel()}}</span>
     </div>
   </header>
 
@@ -17,7 +17,7 @@
     <div class="col-span-8 bg-white rounded-[40px] shadow-xl shadow-indigo-100/50 border border-slate-100 p-10 space-y-10">
       <div class="flex items-center justify-between">
         <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Verification Progress</h3>
-        <span class="text-sm font-bold text-primary">65% Complete</span>
+        <span class="text-sm font-bold text-primary">{{progressLabel()}}</span>
       </div>
 
       <div class="space-y-6">
@@ -42,6 +42,7 @@
     <div class="col-span-4 space-y-8">
       <div class="bg-slate-50 rounded-[40px] border border-slate-100 p-8 text-slate-800 space-y-6 shadow-sm">
         <h3 class="text-sm font-black uppercase tracking-widest text-slate-400">Recent Updates</h3>
+        <p *ngIf="updates().length === 0" class="text-xs text-slate-400">No activity yet.</p>
         <div class="space-y-6">
           <div *ngFor="let update of updates()" class="flex gap-4 relative">
             <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full mt-1.5 shrink-0"></div>
@@ -60,11 +61,11 @@
          <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Support</h3>
          <div class="flex items-center gap-4 group cursor-pointer">
             <div class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-               <span class="material-symbols-outlined text-sm">chat</span>
+               <span class="text-xs font-black text-slate-500 group-hover:text-white">{{candidateInitials()}}</span>
             </div>
             <div>
-               <p class="text-sm font-bold text-slate-800">Help Center</p>
-               <p class="text-[10px] text-slate-400">Average response: 5 mins</p>
+               <p class="text-sm font-bold text-slate-800">{{candidateName()}}</p>
+               <p class="text-[10px] text-slate-400">Candidate</p>
             </div>
          </div>
       </div>

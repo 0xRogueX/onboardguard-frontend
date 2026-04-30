@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { CandidateStatusDto, DocumentDto } from '../models';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -14,11 +15,10 @@ export interface ApiResponse<T> {
 })
 export class CandidateService {
   private readonly apiUrl = 'http://localhost:8080/api/v1/candidates/profile';
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) { }
-
-  getProfileStatus(): Observable<ApiResponse<any>> {
-    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/status`);
+  getProfileStatus(): Observable<ApiResponse<CandidateStatusDto>> {
+    return this.http.get<ApiResponse<CandidateStatusDto>>(`${this.apiUrl}/status`);
   }
 
   updatePersonalDetails(data: any): Observable<ApiResponse<void>> {
@@ -34,9 +34,11 @@ export class CandidateService {
     formData.append('file', file);
     formData.append('candidateDocumentType', documentType);
     
-    // Note: Do NOT set Content-Type header manually when sending FormData,
-    // HttpClient will set it to multipart/form-data with the correct boundary automatically.
     return this.http.post<ApiResponse<any>>(`${this.apiUrl}/documents`, formData);
+  }
+
+  getRejectedDocuments(): Observable<ApiResponse<DocumentDto[]>> {
+    return this.http.get<ApiResponse<DocumentDto[]>>(`${this.apiUrl}/documents?status=REJECTED`);
   }
 
   submitProfile(): Observable<ApiResponse<void>> {

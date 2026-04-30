@@ -24,7 +24,7 @@
         <span class="material-symbols-outlined text-[20px]">assignment</span>
         My Application
       </a>
-      <a routerLink="/candidate/re-upload" routerLinkActive="bg-white/10 text-white shadow-lg shadow-black/10" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white rounded-xl font-bold transition-all hover:bg-white/5">
+      <a routerLink="/candidate/reupload" routerLinkActive="bg-white/10 text-white shadow-lg shadow-black/10" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white rounded-xl font-bold transition-all hover:bg-white/5">
         <span class="material-symbols-outlined text-[20px]">upload_file</span>
         Re-upload Docs
       </a>
@@ -36,9 +36,9 @@
     
     <div class="p-6 border-t border-white/10 relative z-10 bg-slate-900/50 backdrop-blur-sm">
        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-indigo-500/30">AT</div>
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-indigo-500/30">{{initials()}}</div>
           <div class="flex flex-col">
-             <span class="text-xs font-bold text-white">Alex Thompson</span>
+             <span class="text-xs font-bold text-white">{{displayName()}}</span>
              <span class="text-[10px] text-indigo-300 font-medium">Candidate</span>
           </div>
        </div>

@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { OfficerService } from '../../services/officer.service';
+import { CaseDto } from '../../models';
 
 @Component({
   selector: 'app-escalated-cases',
@@ -9,11 +11,24 @@ import { RouterLink } from '@angular/router';
   templateUrl: './escalated-cases.component.html',
   styleUrl: './escalated-cases.component.css'
 })
-export class EscalatedCasesComponent {
-  escalatedCases = [
-    { id: '#EX-9901', name: 'James Wilson', reason: 'Sanction list partial hit', l1Officer: 'Sarah J.', score: 92 },
-    { id: '#EX-9904', name: 'Maria Santos', reason: 'Multiple ID discrepancy', l1Officer: 'Michael C.', score: 85 },
-    { id: '#EX-9908', name: 'Igor Volkov', reason: 'High-value PEP match', l1Officer: 'Sarah J.', score: 98 },
-    { id: '#EX-9912', name: 'Emma Thompson', reason: 'Address forgery suspected', l1Officer: 'Elena R.', score: 76 },
-  ];
+export class EscalatedCasesComponent implements OnInit {
+  private officerService = inject(OfficerService);
+
+  escalatedCases = signal<CaseDto[]>([]);
+  isLoading = signal(true);
+
+  ngOnInit() {
+    this.officerService.getEscalatedCases().subscribe({
+      next: (response) => {
+        this.escalatedCases.set(response.data);
+        this.isLoading.set(false);
+      },
+      error: () => this.isLoading.set(false)
+    });
+  }
+
+  getRiskScore(caseItem: CaseDto) {
+    if (caseItem.slaBreached || caseItem.isSlaBreached) return 95;
+    return caseItem.status === 'ESCALATED' ? 80 : 60;
+  }
 }

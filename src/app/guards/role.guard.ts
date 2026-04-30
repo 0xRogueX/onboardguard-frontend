@@ -21,6 +21,6 @@ export const roleGuard: CanActivateFn = (route, state) => {
      return false;
   }
 
-  router.navigate(['/candidate/login']);
+  router.navigate([state.url.startsWith('/admin') || state.url.startsWith('/officer') ? '/staff/login' : '/candidate/login']);
   return false;
 };

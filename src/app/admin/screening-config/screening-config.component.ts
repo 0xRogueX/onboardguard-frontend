@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AdminService, SystemConfigDto } from '../../services/admin.service';
 
 @Component({
   selector: 'app-screening-config',
@@ -8,14 +9,23 @@ import { CommonModule } from '@angular/common';
   templateUrl: './screening-config.component.html',
   styleUrl: './screening-config.component.css'
 })
-export class ScreeningConfigComponent {
-  allowedDocs = ['Passport', 'National ID', 'Driving License', 'Work Permit'];
-  
-  riskRules = [
-    { name: 'Negative News Matches', weight: 40 },
-    { name: 'PEP Identification', weight: 30 },
-    { name: 'Sanction List Hits', weight: 80 },
-    { name: 'Jurisdiction Risk', weight: 20 },
-    { name: 'Source of Wealth Ambiguity', weight: 50 },
-  ];
+export class ScreeningConfigComponent implements OnInit {
+  private adminService = inject(AdminService);
+
+  configs = signal<SystemConfigDto[]>([]);
+  isLoading = signal(true);
+
+  ngOnInit() {
+    this.adminService.getSystemConfigs().subscribe({
+      next: (response) => {
+        this.configs.set(response.data);
+        this.isLoading.set(false);
+      },
+      error: () => this.isLoading.set(false)
+    });
+  }
+
+  displayValue(config: SystemConfigDto) {
+    return config.isSensitive ? '********' : config.configValue;
+  }
 }

@@ -1,5 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CandidateService } from '../../services/candidate.service';
+import { OnboardingStatus } from '../../models';
 
 @Component({
   selector: 'app-application-tracking',
@@ -8,14 +10,92 @@ import { CommonModule } from '@angular/common';
   templateUrl: './application-tracking.component.html',
   styleUrl: './application-tracking.component.css'
 })
-export class ApplicationTrackingComponent {
+export class ApplicationTrackingComponent implements OnInit {
+  private candidateService = inject(CandidateService);
+
+  currentStatus = signal('');
   steps = signal([
-    { title: 'Personal Information', description: 'Basic profile and contact details', icon: 'person', status: 'completed' },
-    { title: 'Identity Verification', description: 'Passport or National ID upload', icon: 'fingerprint', status: 'completed' },
-    { title: 'Address Proof', description: 'Utility bill or bank statement', icon: 'home', status: 'error' },
-    { title: 'Employment History', description: 'Past 5 years of experience', icon: 'work', status: 'in-progress' },
-    { title: 'Background Check', description: 'Criminal and credit history', icon: 'search_check', status: 'pending' },
+    { title: 'Profile Started', description: 'Basic profile and contact details', icon: 'person', status: 'pending' },
+    { title: 'Documents Uploaded', description: 'Identity and supporting documents', icon: 'fingerprint', status: 'pending' },
+    { title: 'Submitted', description: 'Application submitted for verification', icon: 'upload_file', status: 'pending' },
+    { title: 'Under Review', description: 'Officer and screening review', icon: 'work', status: 'pending' },
+    { title: 'Decision', description: 'Final onboarding result', icon: 'search_check', status: 'pending' },
   ]);
+
+  ngOnInit() {
+    this.candidateService.getProfileStatus().subscribe({
+      next: (response) => this.applyStatus(response.data.onboardingStatus, response.data.isSubmitted),
+      error: () => this.currentStatus.set('Unable to load status')
+    });
+  }
+
+  private applyStatus(status: OnboardingStatus, isSubmitted: boolean) {
+    this.currentStatus.set(this.formatStatus(status));
+    const completedThrough = this.getCompletedStep(status, isSubmitted);
+    const issueStep = this.getIssueStep(status);
+    this.steps.update(steps => steps.map((step, index) => ({
+      ...step,
+      status: issueStep !== null && index === issueStep
+        ? 'error'
+        : this.isFinalSuccess(status)
+          ? 'completed'
+        : index < completedThrough
+          ? 'completed'
+          : index === completedThrough
+            ? 'in-progress'
+            : 'pending'
+    })));
+  }
+
+  private getCompletedStep(status: OnboardingStatus, isSubmitted: boolean) {
+    switch (status) {
+      case OnboardingStatus.REGISTERED:
+        return 0;
+      case OnboardingStatus.PERSONAL_SAVED:
+        return 1;
+      case OnboardingStatus.PROFESSIONAL_SAVED:
+        return 2;
+      case OnboardingStatus.DOCUMENTS_UPLOADED:
+        return 3;
+      case OnboardingStatus.DOCUMENTS_REJECTED:
+        return 2;
+      case OnboardingStatus.FORM_SUBMITTED:
+      case OnboardingStatus.SCREENING_PENDING:
+      case OnboardingStatus.SCREENING_IN_PROGRESS:
+      case OnboardingStatus.DOCUMENTS_UNDER_REVIEW:
+      case OnboardingStatus.CASE_IN_REVIEW:
+      case OnboardingStatus.SCREENING_CLEARED:
+      case OnboardingStatus.FLAGGED:
+      case OnboardingStatus.REJECTED:
+      case OnboardingStatus.APPROVED:
+        return 4;
+      default:
+        return isSubmitted ? 4 : 0;
+    }
+  }
+
+  private getIssueStep(status: OnboardingStatus): number | null {
+    switch (status) {
+      case OnboardingStatus.DOCUMENTS_REJECTED:
+        return 2;
+      case OnboardingStatus.FLAGGED:
+      case OnboardingStatus.REJECTED:
+        return 4;
+      default:
+        return null;
+    }
+  }
+
+  private isFinalSuccess(status: OnboardingStatus) {
+    return status === OnboardingStatus.APPROVED || status === OnboardingStatus.SCREENING_CLEARED;
+  }
+
+  private formatStatus(status: OnboardingStatus) {
+    return status
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, ch => ch.toUpperCase());
+  }
 
   getStatusBg(status: string): string {
     switch (status) {

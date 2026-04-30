@@ -1,14 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-interface User {
-  name: string;
-  email: string;
-  role: string;
-  status: 'Active' | 'Pending' | 'Suspended';
-  clearance: number;
-  lastLogin: string;
-}
+import { AdminService } from '../../services/admin.service';
+import { UserProfile } from '../../models';
 
 @Component({
   selector: 'app-user-management',
@@ -17,15 +10,72 @@ interface User {
   templateUrl: './user-management.component.html',
   styleUrl: './user-management.component.css'
 })
-export class UserManagementComponent {
-  users = signal<User[]>([
-    { name: 'Sarah Jenkins', email: 'sarah.j@enterprise.com', role: 'L1 Officer', status: 'Active', clearance: 100, lastLogin: '2 mins ago' },
-    { name: 'Michael Chen', email: 'm.chen@enterprise.com', role: 'L2 Officer', status: 'Active', clearance: 95, lastLogin: '1 hour ago' },
-    { name: 'Elena Rodriguez', email: 'elena.r@enterprise.com', role: 'Admin', status: 'Pending', clearance: 60, lastLogin: 'Never' },
-    { name: 'David Smith', email: 'd.smith@enterprise.com', role: 'Compliance Manager', status: 'Suspended', clearance: 100, lastLogin: '3 days ago' },
-    { name: 'James Wilson', email: 'j.wilson@enterprise.com', role: 'L1 Officer', status: 'Active', clearance: 100, lastLogin: '5 mins ago' },
-    { name: 'Emma Thompson', email: 'e.thompson@enterprise.com', role: 'L2 Officer', status: 'Pending', clearance: 45, lastLogin: '10 mins ago' },
-  ]);
+export class UserManagementComponent implements OnInit {
+  private adminService = inject(AdminService);
+
+  users = signal<UserProfile[]>([]);
+  totalUsers = signal(0);
+  totalPages = signal(0);
+  isLoading = signal(true);
+  errorMessage = signal('');
+  activeOfficers = computed(() => this.users().filter(user => user.isActive && ['ROLE_OFFICER_L1', 'ROLE_OFFICER_L2', 'L1_OFFICER', 'L2_OFFICER'].includes(user.role)).length);
+
+  ngOnInit() {
+    this.loadUsers();
+  }
+
+  loadUsers() {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    this.adminService.getUsers().subscribe({
+      next: (response) => {
+        this.users.set(response.data.content);
+        this.totalUsers.set(response.data.totalElements);
+        this.totalPages.set(response.data.totalPages);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.errorMessage.set(err.error?.message || 'Unable to load users from backend.');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  getDisplayName(user: UserProfile) {
+    return user.fullName || user.email;
+  }
+
+  getRoleLabel(role: string) {
+    switch (role) {
+      case 'ROLE_OFFICER_L1':
+      case 'L1_OFFICER':
+        return 'L1 Officer';
+      case 'ROLE_OFFICER_L2':
+      case 'L2_OFFICER':
+        return 'L2 Officer';
+      case 'ROLE_SUPER_ADMIN':
+      case 'SUPER_ADMIN':
+        return 'Super Admin';
+      case 'ROLE_ADMIN':
+      case 'ADMIN':
+        return 'Admin';
+      case 'ROLE_CANDIDATE':
+      case 'CANDIDATE':
+        return 'Candidate';
+      default:
+        return role.replace(/_/g, ' ');
+    }
+  }
+
+  getUserStatus(user: UserProfile) {
+    if (user.locked) return 'Suspended';
+    return user.isActive ? 'Active' : 'Pending';
+  }
+
+  getClearance(user: UserProfile) {
+    return user.isActive && !user.locked ? 100 : user.locked ? 0 : 50;
+  }
 
   getStatusClass(status: string) {
     switch (status) {

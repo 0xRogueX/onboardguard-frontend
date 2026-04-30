@@ -6,7 +6,7 @@
           <div class="space-y-2">
              <div class="inline-flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/20 backdrop-blur-md">
                 <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                Security Level 1 Access Required
+                {{roleLabel()}} Access Required
              </div>
              <h1 class="text-3xl font-black tracking-tighter">Emergency Protocol Control</h1>
              <p class="text-red-100 text-sm max-w-md leading-relaxed opacity-90">High-risk system interventions. All actions taken here are logged and require dual-factor authorization for execution.</p>
@@ -63,7 +63,7 @@
              <button class="w-full p-6 rounded-3xl border-2 border-red-500 border-dashed bg-red-50/50 flex flex-col items-start gap-3 hover:bg-red-50 transition-all text-left">
                 <span class="material-symbols-outlined text-red-600">sync_problem</span>
                 <span class="text-sm font-black text-red-600 tracking-tight">Mass Re-Verification</span>
-                <p class="text-[10px] text-red-500 font-bold uppercase leading-tight opacity-70">Trigger background re-screening for all 18.2k active candidates against current lists.</p>
+                <p class="text-[10px] text-red-500 font-bold uppercase leading-tight opacity-70">Trigger background re-screening for all {{activeCandidates()}} active candidates against current lists.</p>
              </button>
 
              <button class="w-full p-6 rounded-3xl border-2 border-slate-100 bg-slate-50 flex flex-col items-start gap-3 hover:border-slate-200 transition-all text-left">
@@ -80,7 +80,7 @@
        <div class="flex items-center gap-4">
           <div class="flex flex-col">
              <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Session</span>
-             <span class="text-xs font-bold text-slate-600">Admin 001 - James Anderson</span>
+             <span class="text-xs font-bold text-slate-600">{{displayName()}} - {{roleLabel()}}</span>
           </div>
        </div>
        <div class="flex gap-4">

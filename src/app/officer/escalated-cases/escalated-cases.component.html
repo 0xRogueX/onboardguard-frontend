@@ -9,42 +9,43 @@
       <p class="text-slate-500 text-sm">Reviewing high-risk cases flagged by L1 Officers for specialized compliance assessment.</p>
     </div>
     <div class="flex items-center gap-4 bg-slate-950 border border-slate-800 p-2 rounded-2xl">
-       <button class="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold shadow-lg">Pending (24)</button>
+       <button class="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold shadow-lg">Pending ({{escalatedCases().length}})</button>
        <button class="px-4 py-2 text-slate-500 rounded-xl text-xs font-bold hover:bg-slate-900 transition-all">Resolved (182)</button>
     </div>
   </div>
 
   <!-- Escalated Cases Grid -->
   <div class="grid grid-cols-1 gap-6">
-    <div *ngFor="let caseItem of escalatedCases" class="bg-slate-950 border border-slate-800 rounded-[32px] p-8 flex items-center gap-10 hover:border-red-500/30 transition-all group cursor-pointer relative overflow-hidden">
+    <div *ngIf="!isLoading() && escalatedCases().length === 0" class="bg-slate-950 border border-slate-800 rounded-[32px] p-8 text-slate-500 font-bold">No escalated cases found.</div>
+    <div *ngFor="let caseItem of escalatedCases()" class="bg-slate-950 border border-slate-800 rounded-[32px] p-8 flex items-center gap-10 hover:border-red-500/30 transition-all group cursor-pointer relative overflow-hidden">
        <!-- Risk Indicator Strip -->
        <div class="absolute top-0 left-0 w-1.5 h-full bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]"></div>
        
        <!-- Case Identity -->
        <div class="w-16 h-16 rounded-[20px] bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 font-black text-xl group-hover:bg-red-500 group-hover:text-white group-hover:border-red-500 transition-all duration-500">
-          {{caseItem.name.charAt(0)}}
+          {{caseItem.candidateId}}
        </div>
 
        <div class="flex-1 grid grid-cols-4 gap-8 items-center">
           <div class="space-y-1">
-             <h4 class="text-lg font-black text-white">{{caseItem.name}}</h4>
+             <h4 class="text-lg font-black text-white">Candidate #{{caseItem.candidateId}}</h4>
              <p class="text-xs font-bold text-slate-500">Case ID: {{caseItem.id}}</p>
           </div>
           <div class="space-y-1">
              <p class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Escalation Reason</p>
-             <p class="text-xs font-bold text-red-400">{{caseItem.reason}}</p>
+             <p class="text-xs font-bold text-red-400">{{caseItem.escalationReason || caseItem.outcomeReason || caseItem.status}}</p>
           </div>
           <div class="space-y-1">
              <p class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Assigned L1</p>
-             <p class="text-xs font-bold text-slate-300">{{caseItem.l1Officer}}</p>
+             <p class="text-xs font-bold text-slate-300">{{caseItem.assignedOfficerId || 'Unassigned'}}</p>
           </div>
           <div class="space-y-1">
              <p class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Risk Score</p>
              <div class="flex items-center gap-3">
                 <div class="flex-1 h-1.5 bg-slate-900 rounded-full overflow-hidden">
-                   <div class="h-full bg-red-500" [style.width.%]="caseItem.score"></div>
+                   <div class="h-full bg-red-500" [style.width.%]="getRiskScore(caseItem)"></div>
                 </div>
-                <span class="text-sm font-black text-white">{{caseItem.score}}%</span>
+                <span class="text-sm font-black text-white">{{getRiskScore(caseItem)}}%</span>
              </div>
           </div>
        </div>

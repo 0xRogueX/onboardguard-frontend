@@ -9,6 +9,10 @@ export const routes: Routes = [
     loadComponent: () => import('./candidate/login/login.component').then(c => c.CandidateLoginComponent)
   },
   {
+    path: 'candidate/register',
+    loadComponent: () => import('./candidate/register/register.component').then(c => c.CandidateRegisterComponent)
+  },
+  {
     path: 'staff/login',
     loadComponent: () => import('./staff/login/login.component').then(c => c.StaffLoginComponent)
   },
@@ -18,6 +22,7 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { roles: ['CANDIDATE'] },
     children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./candidate/dashboard/dashboard.component').then(c => c.CandidateDashboardComponent) },
       { path: 'application-tracking', loadComponent: () => import('./candidate/application-tracking/application-tracking.component').then(c => c.ApplicationTrackingComponent) },
       { path: 'onboarding', loadComponent: () => import('./candidate/onboarding-form/onboarding-form.component').then(c => c.CandidateOnboardingFormComponent) },
@@ -30,6 +35,7 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN', 'SUPER_ADMIN'] },
     children: [
+      { path: '', redirectTo: 'users', pathMatch: 'full' },
       { path: 'users', loadComponent: () => import('./admin/user-management/user-management.component').then(c => c.UserManagementComponent) },
       { path: 'screening', loadComponent: () => import('./admin/screening-config/screening-config.component').then(c => c.ScreeningConfigComponent) },
       { path: 'approvals', loadComponent: () => import('./admin/approval-dashboard/approval-dashboard.component').then(c => c.ApprovalDashboardComponent) },
@@ -42,6 +48,7 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { roles: ['L1_OFFICER', 'L2_OFFICER'] },
     children: [
+      { path: '', redirectTo: 'alerts', pathMatch: 'full' },
       { path: 'alerts', loadComponent: () => import('./officer/alert-dashboard/alert-dashboard.component').then(c => c.AlertDashboardComponent) },
       { path: 'investigation/:id', loadComponent: () => import('./officer/investigation-workspace/investigation-workspace.component').then(c => c.InvestigationWorkspaceComponent) },
       { path: 'case-review', loadComponent: () => import('./officer/case-review/case-review.component').then(c => c.CaseReviewComponent) },
