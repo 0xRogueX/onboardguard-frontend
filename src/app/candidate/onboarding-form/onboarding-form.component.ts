@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject, signal, ChangeDetectionStrategy, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CandidateService } from '../../services/candidate.service';
@@ -11,15 +11,16 @@ import { CandidateStatusDto, OnboardingStatus } from '../../models';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './onboarding-form.component.html',
-  styleUrl: './onboarding-form.component.css'
+  styleUrl: './onboarding-form.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CandidateOnboardingFormComponent implements OnInit {
-  @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
+  fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
   private readonly maxUploadBytes = 10 * 1024 * 1024;
   private readonly allowedUploadTypes = ['application/pdf', 'image/jpeg', 'image/png'];
 
-  currentStep = 1;
-  profileStatus: CandidateStatusDto | null = null;
+  currentStep = signal(1);
+  profileStatus = signal<CandidateStatusDto | null>(null);
   stepTitles = [
     'Personal Details',
     'Professional Details',
@@ -30,12 +31,12 @@ export class CandidateOnboardingFormComponent implements OnInit {
   personalForm!: FormGroup;
   professionalForm!: FormGroup;
 
-  selectedFile: File | null = null;
-  documentType: string = 'AADHAAR_CARD';
+  selectedFile = signal<File | null>(null);
+  documentType = signal<string>('AADHAAR_CARD');
 
-  isLoading = false;
-  successMessage = '';
-  errorMessage = '';
+  isLoading = signal(false);
+  successMessage = signal('');
+  errorMessage = signal('');
 
   private fb = inject(FormBuilder);
   private candidateService = inject(CandidateService);
@@ -79,11 +80,11 @@ export class CandidateOnboardingFormComponent implements OnInit {
 
   onFileSelected(event: any) {
     const file = event.target.files?.[0] ?? null;
-    this.errorMessage = '';
+    this.errorMessage.set('');
 
     if (file && !this.allowedUploadTypes.includes(file.type)) {
-      this.selectedFile = null;
-      this.errorMessage = 'Only PDF, JPG, and PNG files are accepted.';
+      this.selectedFile.set(null);
+      this.errorMessage.set('Only PDF, JPG, and PNG files are accepted.');
       if (event.target) {
         event.target.value = '';
       }
@@ -91,38 +92,38 @@ export class CandidateOnboardingFormComponent implements OnInit {
     }
 
     if (file && file.size > this.maxUploadBytes) {
-      this.selectedFile = null;
-      this.errorMessage = 'File exceeds the 10MB maximum size limit.';
+      this.selectedFile.set(null);
+      this.errorMessage.set('File exceeds the 10MB maximum size limit.');
       if (event.target) {
         event.target.value = '';
       }
       return;
     }
 
-    this.selectedFile = file;
+    this.selectedFile.set(file);
   }
 
   async nextStep() {
-    this.errorMessage = '';
-    this.successMessage = '';
+    this.errorMessage.set('');
+    this.successMessage.set('');
 
-    if (this.currentStep === 1) {
+    if (this.currentStep() === 1) {
       if (this.personalForm.invalid) {
         this.personalForm.markAllAsTouched();
-        this.errorMessage = 'Please fill all required fields correctly.';
+        this.errorMessage.set('Please fill all required fields correctly.');
         return;
       }
       await this.savePersonalDetails();
-    } else if (this.currentStep === 2) {
+    } else if (this.currentStep() === 2) {
       if (this.professionalForm.invalid) {
         this.professionalForm.markAllAsTouched();
-        this.errorMessage = 'Please fill all required fields correctly.';
+        this.errorMessage.set('Please fill all required fields correctly.');
         return;
       }
       await this.saveProfessionalDetails();
-    } else if (this.currentStep === 3) {
-      if (!this.selectedFile) {
-        this.errorMessage = 'Please choose a document from your system before continuing.';
+    } else if (this.currentStep() === 3) {
+      if (!this.selectedFile()) {
+        this.errorMessage.set('Please choose a document from your system before continuing.');
         return;
       }
       await this.uploadSelectedDocument();
@@ -130,26 +131,26 @@ export class CandidateOnboardingFormComponent implements OnInit {
   }
 
   prevStep() {
-    if (this.currentStep > 1) {
-      this.currentStep--;
-      this.errorMessage = '';
-      this.successMessage = '';
+    if (this.currentStep() > 1) {
+      this.currentStep.update(s => s - 1);
+      this.errorMessage.set('');
+      this.successMessage.set('');
     }
   }
 
   async submitApplication() {
-    this.isLoading = true;
+    this.isLoading.set(true);
     try {
       await firstValueFrom(this.candidateService.submitProfile());
-      this.currentStep = 4;
+      this.currentStep.set(4);
       this.candidateService.notifyProfileUpdated();
       void this.syncProgressFromBackend(4);
-      this.successMessage = 'Application submitted successfully!';
+      this.successMessage.set('Application submitted successfully!');
       setTimeout(() => this.router.navigate(['/candidate/dashboard']), 2000);
     } catch (err: any) {
-      this.errorMessage = this.getRequestErrorMessage(err, 'Failed to submit application.');
+      this.errorMessage.set(this.getRequestErrorMessage(err, 'Failed to submit application.'));
     } finally {
-      this.isLoading = false;
+      this.isLoading.set(false);
     }
   }
 
@@ -158,72 +159,74 @@ export class CandidateOnboardingFormComponent implements OnInit {
   }
 
   getUploadButtonLabel() {
-    return this.selectedFile ? `Upload ${this.selectedFile.name}` : 'Choose file from system';
+    const file = this.selectedFile();
+    return file ? `Upload ${file.name}` : 'Choose file from system';
   }
 
   private async savePersonalDetails() {
-    this.isLoading = true;
+    this.isLoading.set(true);
     try {
       await firstValueFrom(this.candidateService.updatePersonalDetails(this.buildPersonalDetailsPayload()));
-      this.currentStep = Math.max(this.currentStep, 2);
-      this.successMessage = 'Personal details saved successfully.';
+      this.currentStep.update(s => Math.max(s, 2));
+      this.successMessage.set('Personal details saved successfully.');
       this.candidateService.notifyProfileUpdated();
       void this.syncProgressFromBackend(2);
     } catch (err: any) {
-      this.errorMessage = this.getRequestErrorMessage(err, 'Failed to save personal details.');
+      this.errorMessage.set(this.getRequestErrorMessage(err, 'Failed to save personal details.'));
     } finally {
-      this.isLoading = false;
+      this.isLoading.set(false);
     }
   }
 
   private async saveProfessionalDetails() {
-    this.isLoading = true;
+    this.isLoading.set(true);
     try {
       const payload = this.buildProfessionalDetailsPayload();
       await firstValueFrom(this.candidateService.updateProfessionalDetails(payload));
-      this.currentStep = Math.max(this.currentStep, 3);
-      this.successMessage = 'Professional details saved successfully.';
+      this.currentStep.update(s => Math.max(s, 3));
+      this.successMessage.set('Professional details saved successfully.');
       this.candidateService.notifyProfileUpdated();
       void this.syncProgressFromBackend(3);
     } catch (err: any) {
-      this.errorMessage = this.getRequestErrorMessage(err, 'Failed to save professional details.');
+      this.errorMessage.set(this.getRequestErrorMessage(err, 'Failed to save professional details.'));
     } finally {
-      this.isLoading = false;
+      this.isLoading.set(false);
     }
   }
 
   private async uploadSelectedDocument() {
-    this.isLoading = true;
+    this.isLoading.set(true);
     try {
-      await firstValueFrom(this.candidateService.uploadDocument(this.selectedFile!, this.documentType));
-      this.selectedFile = null;
-      if (this.fileInput?.nativeElement) {
-        this.fileInput.nativeElement.value = '';
+      await firstValueFrom(this.candidateService.uploadDocument(this.selectedFile()!, this.documentType()));
+      this.selectedFile.set(null);
+      const input = this.fileInput();
+      if (input?.nativeElement) {
+        input.nativeElement.value = '';
       }
-      this.currentStep = Math.max(this.currentStep, 4);
-      this.successMessage = 'Document uploaded successfully.';
+      this.currentStep.update(s => Math.max(s, 4));
+      this.successMessage.set('Document uploaded successfully.');
       this.candidateService.notifyProfileUpdated();
       void this.syncProgressFromBackend(4);
     } catch (err: any) {
-      this.errorMessage = this.getRequestErrorMessage(err, 'Failed to upload document.');
+      this.errorMessage.set(this.getRequestErrorMessage(err, 'Failed to upload document.'));
     } finally {
-      this.isLoading = false;
+      this.isLoading.set(false);
     }
   }
 
   private async syncProgressFromBackend(fallbackStep?: number) {
     try {
       const response = await firstValueFrom(this.candidateService.getProfileStatus());
-      this.profileStatus = response.data;
+      this.profileStatus.set(response.data);
       const backendStep = this.getStepFromStatus(response.data.onboardingStatus, response.data.isSubmitted);
       if (fallbackStep) {
-        this.currentStep = Math.max(fallbackStep, backendStep);
+        this.currentStep.update(s => Math.max(fallbackStep, backendStep));
       } else {
-        this.currentStep = backendStep;
+        this.currentStep.set(backendStep);
       }
     } catch {
       if (fallbackStep) {
-        this.currentStep = Math.max(this.currentStep, fallbackStep);
+        this.currentStep.update(s => Math.max(this.currentStep(), fallbackStep));
       }
     }
   }
@@ -306,9 +309,10 @@ export class CandidateOnboardingFormComponent implements OnInit {
   }
 
   clearSelectedFile() {
-    this.selectedFile = null;
-    if (this.fileInput?.nativeElement) {
-      this.fileInput.nativeElement.value = '';
+    this.selectedFile.set(null);
+    const input = this.fileInput();
+    if (input?.nativeElement) {
+      input.nativeElement.value = '';
     }
   }
 
