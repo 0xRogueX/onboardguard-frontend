@@ -1,9 +1,10 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CandidateService } from '../../services/candidate.service';
 import { CandidateStatusDto, DocumentDto, OnboardingStatus } from '../../models';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 interface Step {
   title: string;
@@ -61,6 +62,8 @@ const DASHBOARD_STEPS: StepBlueprint[] = [
 export class CandidateDashboardComponent implements OnInit {
   private authService = inject(AuthService);
   private candidateService = inject(CandidateService);
+  private destroyRef = inject(DestroyRef);
+  private dashboardRequestId = 0;
 
   profileStatus = signal<CandidateStatusDto | null>(null);
   rejectedDocuments = signal<DocumentDto[]>([]);
@@ -75,15 +78,22 @@ export class CandidateDashboardComponent implements OnInit {
   updates = computed<Update[]>(() => this.buildUpdates());
 
   ngOnInit() {
+    this.candidateService.profileUpdated$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.loadDashboardData());
     this.loadDashboardData();
   }
 
   loadDashboardData() {
+    const requestId = ++this.dashboardRequestId;
     this.isLoading.set(true);
     this.errorMessage.set('');
 
     let remainingRequests = 2;
     const complete = () => {
+      if (requestId !== this.dashboardRequestId) {
+        return;
+      }
       remainingRequests -= 1;
       if (remainingRequests <= 0) {
         this.isLoading.set(false);
@@ -92,10 +102,16 @@ export class CandidateDashboardComponent implements OnInit {
 
     this.candidateService.getProfileStatus().subscribe({
       next: (response) => {
+        if (requestId !== this.dashboardRequestId) {
+          return;
+        }
         this.profileStatus.set(response.data);
         complete();
       },
       error: (err) => {
+        if (requestId !== this.dashboardRequestId) {
+          return;
+        }
         this.errorMessage.set(err.error?.message || 'Unable to load your onboarding status.');
         complete();
       }
@@ -103,10 +119,18 @@ export class CandidateDashboardComponent implements OnInit {
 
     this.candidateService.getRejectedDocuments().subscribe({
       next: (response) => {
+        if (requestId !== this.dashboardRequestId) {
+          return;
+        }
         this.rejectedDocuments.set(response.data);
         complete();
       },
-      error: () => complete()
+      error: () => {
+        if (requestId !== this.dashboardRequestId) {
+          return;
+        }
+        complete();
+      }
     });
   }
 

@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CandidateService } from '../../services/candidate.service';
 import { OnboardingStatus } from '../../models';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-application-tracking',
@@ -12,6 +13,8 @@ import { OnboardingStatus } from '../../models';
 })
 export class ApplicationTrackingComponent implements OnInit {
   private candidateService = inject(CandidateService);
+  private destroyRef = inject(DestroyRef);
+  private statusRequestId = 0;
 
   currentStatus = signal('');
   steps = signal([
@@ -23,9 +26,27 @@ export class ApplicationTrackingComponent implements OnInit {
   ]);
 
   ngOnInit() {
+    this.candidateService.profileUpdated$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.loadStatus());
+    this.loadStatus();
+  }
+
+  private loadStatus() {
+    const requestId = ++this.statusRequestId;
     this.candidateService.getProfileStatus().subscribe({
-      next: (response) => this.applyStatus(response.data.onboardingStatus, response.data.isSubmitted),
-      error: () => this.currentStatus.set('Unable to load status')
+      next: (response) => {
+        if (requestId !== this.statusRequestId) {
+          return;
+        }
+        this.applyStatus(response.data.onboardingStatus, response.data.isSubmitted);
+      },
+      error: () => {
+        if (requestId !== this.statusRequestId) {
+          return;
+        }
+        this.currentStatus.set('Unable to load status');
+      }
     });
   }
 

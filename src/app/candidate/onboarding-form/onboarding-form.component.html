@@ -17,7 +17,7 @@
              [class.bg-primary]="i <= currentStep" [class.bg-slate-100]="i > currentStep"></div>
       </div>
 
-      <button routerLink="/candidate/dashboard" class="text-slate-400 hover:text-slate-600 transition-colors">
+      <button type="button" routerLink="/candidate/dashboard" class="text-slate-400 hover:text-slate-600 transition-colors">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
@@ -70,6 +70,14 @@
         <div class="space-y-2">
           <label class="text-xs font-bold text-slate-500 uppercase">PAN Number</label>
           <input type="text" formControlName="panNumber" placeholder="ABCDE1234F" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Aadhaar Number</label>
+          <input type="text" formControlName="adhaarNumber" placeholder="1234 5678 9012" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Passport Number</label>
+          <input type="text" formControlName="passportNumber" placeholder="Enter passport number" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
         </div>
         <div class="space-y-2 col-span-2">
           <label class="text-xs font-bold text-slate-500 uppercase">Address Line 1</label>
@@ -135,7 +143,6 @@
       <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
          <div class="space-y-2">
            <label class="text-xs font-bold text-slate-500 uppercase">Document Type</label>
-           <!-- Need FormsModule for ngModel here if we use two way binding, or just use native event or formControl -->
            <select (change)="documentType = $any($event.target).value" [value]="documentType" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all text-slate-600 bg-white">
               <option value="AADHAAR_CARD">Aadhaar Card</option>
               <option value="PAN_CARD">PAN Card</option>
@@ -145,16 +152,24 @@
            </select>
          </div>
 
-         <div class="relative bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-12 text-center space-y-4 hover:border-primary/50 transition-colors cursor-pointer group">
-           <input type="file" (change)="onFileSelected($event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-           <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto group-hover:bg-indigo-50 transition-colors">
-             <span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-primary transition-colors">cloud_upload</span>
+         <div class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center space-y-4 hover:border-primary/50 transition-colors">
+           <input #fileInput type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event)" class="hidden">
+           <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto">
+             <span class="material-symbols-outlined text-3xl text-slate-400">upload_file</span>
            </div>
            <div>
-             <p class="text-sm font-bold text-slate-700">Drag and drop your file here</p>
-             <p class="text-xs text-slate-400">or <span class="text-primary underline">browse files</span> from your device</p>
+             <p class="text-sm font-bold text-slate-700">Choose a file from your device</p>
+             <p class="text-xs text-slate-400">PDF, JPG, or PNG up to 10MB</p>
            </div>
-           <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ selectedFile ? selectedFile.name : 'Supported: JPG, PNG, PDF (Max 10MB)' }}</p>
+           <div class="flex flex-col sm:flex-row justify-center gap-3">
+             <button type="button" (click)="triggerFilePicker(fileInput)" class="px-5 py-3 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-black uppercase tracking-widest hover:border-primary hover:text-primary transition-all">
+               Browse Files
+             </button>
+             <button *ngIf="selectedFile" type="button" (click)="clearSelectedFile()" class="px-5 py-3 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all">
+               Clear File
+             </button>
+           </div>
+           <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ selectedFile ? selectedFile.name : 'No file selected yet' }}</p>
          </div>
       </div>
     </div>
@@ -179,17 +194,18 @@
 
     <!-- Navigation Buttons -->
     <div class="mt-12 flex justify-between items-center">
-      <button (click)="prevStep()" [disabled]="currentStep === 1 || isLoading" 
+      <button type="button" (click)="prevStep()" [disabled]="currentStep === 1 || isLoading" 
               class="px-8 py-3 rounded-xl font-bold text-sm text-slate-400 hover:text-slate-600 disabled:opacity-0 transition-all flex items-center gap-2">
         <span class="material-symbols-outlined">arrow_back</span> Back
       </button>
-      <button *ngIf="currentStep < 4" (click)="nextStep()" [disabled]="isLoading"
+      <button type="button" *ngIf="currentStep < 4" (click)="nextStep()" [disabled]="isLoading"
               class="px-10 py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-xl shadow-indigo-900/20 hover:bg-primary/90 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-70">
         <span *ngIf="isLoading" class="material-symbols-outlined animate-spin">progress_activity</span>
-        {{ isLoading ? 'Saving...' : 'Continue' }}
-        <span *ngIf="!isLoading" class="material-symbols-outlined">arrow_forward</span>
+        {{ isLoading ? (currentStep === 3 ? 'Uploading...' : 'Saving...') : (currentStep === 3 ? 'Upload & Continue' : 'Continue') }}
+        <span *ngIf="!isLoading && currentStep < 3" class="material-symbols-outlined">arrow_forward</span>
+        <span *ngIf="!isLoading && currentStep === 3" class="material-symbols-outlined">cloud_upload</span>
       </button>
-      <button *ngIf="currentStep === 4" (click)="submitApplication()" [disabled]="isLoading"
+      <button type="button" *ngIf="currentStep === 4" (click)="submitApplication()" [disabled]="isLoading"
               class="px-10 py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm shadow-xl shadow-emerald-500/20 hover:bg-emerald-600 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-70">
         <span *ngIf="isLoading" class="material-symbols-outlined animate-spin">progress_activity</span>
         {{ isLoading ? 'Submitting...' : 'Submit Application' }}
