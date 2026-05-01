@@ -56,15 +56,14 @@ export class AlertBoardComponent implements OnInit {
 
   acknowledgeAlert(alertId: number) {
     this.isAcknowledging.set(alertId);
-    this.officerService.acknowledgeAlert(alertId).subscribe({
+    this.officerService.convertAlertToCase(alertId).subscribe({
       next: (res) => {
         this.isAcknowledging.set(null);
-        this.successMessage.set(`Alert #${alertId} claimed. You can now convert it to a case.`);
-        this.loadAlerts();
-        setTimeout(() => this.successMessage.set(''), 4000);
+        this.successMessage.set(`Alert claimed and converted to Case #${res.data}.`);
+        this.router.navigate(['/officer/case-review']);
       },
       error: (err) => {
-        this.errorMessage.set(err?.error?.message || 'Failed to acknowledge alert.');
+        this.errorMessage.set(err?.error?.message || 'Failed to claim alert.');
         this.isAcknowledging.set(null);
       }
     });

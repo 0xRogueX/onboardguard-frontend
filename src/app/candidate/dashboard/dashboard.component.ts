@@ -31,26 +31,32 @@ const DASHBOARD_STEPS: StepBlueprint[] = [
     icon: 'person'
   },
   {
-    title: 'Professional Details',
-    description: 'Employment and education details',
-    icon: 'work'
-  },
-  {
-    title: 'Document Uploads',
+    title: 'Documents Uploaded',
     description: 'Identity and supporting documents',
-    icon: 'fingerprint'
+    icon: 'upload_file'
   },
   {
-    title: 'Screening Review',
-    description: 'Officer and screening verification',
-    icon: 'search_check'
+    title: 'Submitted for Review',
+    description: 'Application submitted — in officer queue',
+    icon: 'send'
+  },
+  {
+    title: 'Documents Verified',
+    description: 'Officer completed document verification',
+    icon: 'verified'
+  },
+  {
+    title: 'Screening',
+    description: 'Background and compliance screening',
+    icon: 'manage_search'
   },
   {
     title: 'Final Decision',
     description: 'Approved or action required',
-    icon: 'verified_user'
+    icon: 'gavel'
   }
 ];
+
 
 @Component({
   selector: 'app-candidate-dashboard',
@@ -225,23 +231,24 @@ export class CandidateDashboardComponent implements OnInit {
       case OnboardingStatus.REGISTERED:
         return 0;
       case OnboardingStatus.PERSONAL_SAVED:
-        return 1;
       case OnboardingStatus.PROFESSIONAL_SAVED:
-        return 2;
+        return 1;
       case OnboardingStatus.DOCUMENTS_UPLOADED:
-        return 3;
       case OnboardingStatus.DOCUMENTS_REJECTED:
         return 2;
       case OnboardingStatus.FORM_SUBMITTED:
+      case OnboardingStatus.DOCUMENTS_UNDER_REVIEW:
+        return 3; // Under officer review
+      case OnboardingStatus.DOCUMENTS_VERIFIED:
       case OnboardingStatus.SCREENING_PENDING:
       case OnboardingStatus.SCREENING_IN_PROGRESS:
-      case OnboardingStatus.DOCUMENTS_UNDER_REVIEW:
-      case OnboardingStatus.CASE_IN_REVIEW:
+        return 4; // Screening stage
       case OnboardingStatus.SCREENING_CLEARED:
+      case OnboardingStatus.CASE_IN_REVIEW:
       case OnboardingStatus.FLAGGED:
       case OnboardingStatus.REJECTED:
       case OnboardingStatus.APPROVED:
-        return 4;
+        return 5; // Final decision
       default:
         return 0;
     }
@@ -253,14 +260,14 @@ export class CandidateDashboardComponent implements OnInit {
         return 2;
       case OnboardingStatus.FLAGGED:
       case OnboardingStatus.REJECTED:
-        return 4;
+        return 4; // step 4 = Screening
       default:
         return null;
     }
   }
 
   private isFinalSuccess(status: OnboardingStatus | null | undefined): boolean {
-    return status === OnboardingStatus.APPROVED || status === OnboardingStatus.SCREENING_CLEARED;
+    return status === OnboardingStatus.APPROVED;
   }
 
   private isFinalIssue(status: OnboardingStatus | null | undefined): boolean {
@@ -294,27 +301,29 @@ export class CandidateDashboardComponent implements OnInit {
       case OnboardingStatus.PROFESSIONAL_SAVED:
         return 'Professional details were saved successfully.';
       case OnboardingStatus.DOCUMENTS_UPLOADED:
-        return 'Documents have been uploaded and are waiting for review.';
+        return 'Documents have been uploaded. Please submit your application.';
       case OnboardingStatus.FORM_SUBMITTED:
-        return 'Your onboarding form has been submitted.';
-      case OnboardingStatus.SCREENING_PENDING:
-        return 'Screening is queued for review.';
-      case OnboardingStatus.SCREENING_IN_PROGRESS:
-        return 'Screening is currently in progress.';
+        return 'Your application has been submitted and is in the officer queue.';
       case OnboardingStatus.DOCUMENTS_UNDER_REVIEW:
-        return 'Documents are under compliance review.';
-      case OnboardingStatus.CASE_IN_REVIEW:
-        return 'A case is being reviewed by the officer team.';
+        return 'An officer is actively reviewing your documents.';
+      case OnboardingStatus.DOCUMENTS_VERIFIED:
+        return '✅ All your documents have been verified by an officer!';
+      case OnboardingStatus.SCREENING_PENDING:
+        return 'Background screening has been queued.';
+      case OnboardingStatus.SCREENING_IN_PROGRESS:
+        return 'Background and compliance screening is in progress.';
       case OnboardingStatus.SCREENING_CLEARED:
-        return 'Screening has been cleared.';
+        return 'Background screening cleared. Awaiting final decision.';
+      case OnboardingStatus.CASE_IN_REVIEW:
+        return 'A compliance case is being reviewed by the officer team.';
       case OnboardingStatus.APPROVED:
-        return 'Your onboarding has been approved.';
+        return '🎉 Your onboarding has been approved. Welcome aboard!';
       case OnboardingStatus.FLAGGED:
-        return 'Your profile has been flagged for manual review.';
+        return 'Your profile has been flagged for manual compliance review.';
       case OnboardingStatus.DOCUMENTS_REJECTED:
-        return 'Some documents need to be re-uploaded.';
+        return 'One or more documents were rejected. Please re-upload the highlighted documents.';
       case OnboardingStatus.REJECTED:
-        return 'Your onboarding was rejected.';
+        return 'Your onboarding application was rejected. Please contact HR.';
       default:
         return 'Your onboarding status has been updated.';
     }

@@ -241,9 +241,10 @@ export class CandidateOnboardingFormComponent implements OnInit {
         return 3;
       case OnboardingStatus.DOCUMENTS_UPLOADED:
       case OnboardingStatus.FORM_SUBMITTED:
+      case OnboardingStatus.DOCUMENTS_UNDER_REVIEW:
+      case OnboardingStatus.DOCUMENTS_VERIFIED:
       case OnboardingStatus.SCREENING_PENDING:
       case OnboardingStatus.SCREENING_IN_PROGRESS:
-      case OnboardingStatus.DOCUMENTS_UNDER_REVIEW:
       case OnboardingStatus.CASE_IN_REVIEW:
       case OnboardingStatus.SCREENING_CLEARED:
       case OnboardingStatus.FLAGGED:
@@ -251,11 +252,12 @@ export class CandidateOnboardingFormComponent implements OnInit {
       case OnboardingStatus.APPROVED:
         return 4;
       case OnboardingStatus.DOCUMENTS_REJECTED:
-        return isSubmitted ? 4 : 3;
+        return 3; // Force back to doc upload step
       default:
         return isSubmitted ? 4 : 1;
     }
   }
+
 
   private buildPersonalDetailsPayload() {
     const value = this.personalForm.value;

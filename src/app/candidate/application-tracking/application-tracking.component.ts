@@ -18,11 +18,12 @@ export class ApplicationTrackingComponent implements OnInit {
 
   currentStatus = signal('');
   steps = signal([
-    { title: 'Profile Started', description: 'Basic profile and contact details', icon: 'person', status: 'pending' },
-    { title: 'Documents Uploaded', description: 'Identity and supporting documents', icon: 'fingerprint', status: 'pending' },
-    { title: 'Submitted', description: 'Application submitted for verification', icon: 'upload_file', status: 'pending' },
-    { title: 'Under Review', description: 'Officer and screening review', icon: 'work', status: 'pending' },
-    { title: 'Decision', description: 'Final onboarding result', icon: 'search_check', status: 'pending' },
+    { title: 'Profile Started', description: 'Personal & professional details saved', icon: 'person', status: 'pending' },
+    { title: 'Documents Uploaded', description: 'Identity and supporting documents uploaded', icon: 'upload_file', status: 'pending' },
+    { title: 'Application Submitted', description: 'Form submitted and awaiting officer review', icon: 'send', status: 'pending' },
+    { title: 'Documents Verified', description: 'Officer has verified all submitted documents', icon: 'verified', status: 'pending' },
+    { title: 'Screening', description: 'Background and compliance screening in progress', icon: 'manage_search', status: 'pending' },
+    { title: 'Final Decision', description: 'Final onboarding approval or rejection', icon: 'gavel', status: 'pending' },
   ]);
 
   ngOnInit() {
@@ -73,25 +74,29 @@ export class ApplicationTrackingComponent implements OnInit {
       case OnboardingStatus.REGISTERED:
         return 0;
       case OnboardingStatus.PERSONAL_SAVED:
-        return 1;
       case OnboardingStatus.PROFESSIONAL_SAVED:
-        return 2;
+        return 1;
       case OnboardingStatus.DOCUMENTS_UPLOADED:
-        return 3;
-      case OnboardingStatus.DOCUMENTS_REJECTED:
         return 2;
+      case OnboardingStatus.DOCUMENTS_REJECTED:
+        return 2; // back to doc upload step (shown as error)
       case OnboardingStatus.FORM_SUBMITTED:
+      case OnboardingStatus.DOCUMENTS_UNDER_REVIEW:
+        return 3; // Submitted — officer is reviewing
+      case OnboardingStatus.DOCUMENTS_VERIFIED:
+        return 4; // ✅ All docs approved — show step 4 complete
       case OnboardingStatus.SCREENING_PENDING:
       case OnboardingStatus.SCREENING_IN_PROGRESS:
-      case OnboardingStatus.DOCUMENTS_UNDER_REVIEW:
-      case OnboardingStatus.CASE_IN_REVIEW:
+        return 4; // Screening running
       case OnboardingStatus.SCREENING_CLEARED:
+      case OnboardingStatus.CASE_IN_REVIEW:
       case OnboardingStatus.FLAGGED:
+        return 5; // Screening done, final decision pending
       case OnboardingStatus.REJECTED:
       case OnboardingStatus.APPROVED:
-        return 4;
+        return 6; // Final
       default:
-        return isSubmitted ? 4 : 0;
+        return isSubmitted ? 5 : 0;
     }
   }
 
@@ -101,14 +106,14 @@ export class ApplicationTrackingComponent implements OnInit {
         return 2;
       case OnboardingStatus.FLAGGED:
       case OnboardingStatus.REJECTED:
-        return 4;
+        return 5;
       default:
         return null;
     }
   }
 
   private isFinalSuccess(status: OnboardingStatus) {
-    return status === OnboardingStatus.APPROVED || status === OnboardingStatus.SCREENING_CLEARED;
+    return status === OnboardingStatus.APPROVED;
   }
 
   private formatStatus(status: OnboardingStatus) {
