@@ -1,141 +1,128 @@
 <div class="flex-1 flex flex-col overflow-hidden">
-  <!-- Header -->
   <header class="h-20 bg-white border-b flex items-center justify-between px-10 shadow-sm">
-    <div class="flex items-center gap-4">
-      <h1 class="text-xl font-black text-slate-800 tracking-tight uppercase">User Management</h1>
-      <span class="px-2 py-0.5 rounded bg-indigo-50 text-primary text-[10px] font-black uppercase tracking-widest">Active System</span>
+    <div>
+      <h1 class="text-xl font-black text-slate-900 tracking-tight uppercase">User Management</h1>
+      <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Create officers and control access</p>
     </div>
-    <div class="flex items-center gap-6">
-      <button class="bg-primary text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-primary-container transition-all shadow-xl shadow-indigo-900/20 active:scale-95">
-        <span class="material-symbols-outlined text-sm">person_add</span> Add User
+    <div class="flex items-center gap-3">
+      <button (click)="showAddOfficer.set(!showAddOfficer())" class="bg-slate-900 text-white px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-xl">
+        <span class="material-symbols-outlined text-sm">person_add</span>
+        Add Officer
       </button>
-      <div class="h-10 w-px bg-slate-200"></div>
-      <button class="text-slate-400 hover:text-slate-600 relative transition-colors">
-        <span class="material-symbols-outlined text-2xl">notifications</span>
-        <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-4 border-white"></span>
-      </button>
+      <button (click)="loadUsers()" class="px-5 py-3 rounded-2xl bg-slate-100 text-slate-700 text-xs font-black uppercase tracking-widest">Refresh</button>
     </div>
   </header>
 
-  <!-- Content Area -->
-  <div class="p-10 overflow-y-auto space-y-10">
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-4 gap-8">
-      <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
-        <div class="flex justify-between items-start mb-6">
-          <div class="p-3 bg-indigo-50 rounded-2xl text-primary group-hover:bg-primary group-hover:text-white transition-all">
-            <span class="material-symbols-outlined">group</span>
-          </div>
-          <span class="text-green-500 text-[10px] font-black flex items-center gap-1 uppercase tracking-widest">+12.4% <span class="material-symbols-outlined text-[12px]">arrow_upward</span></span>
-        </div>
-        <h3 class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Total Network Users</h3>
-        <p class="text-3xl font-black text-slate-800 tabular-nums">{{totalUsers()}}</p>
-      </div>
-      
-      <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
-        <div class="flex justify-between items-start mb-6">
-          <div class="p-3 bg-green-50 rounded-2xl text-green-600 group-hover:bg-green-600 group-hover:text-white transition-all">
-            <span class="material-symbols-outlined">verified_user</span>
-          </div>
-          <span class="text-green-500 text-[10px] font-black uppercase tracking-widest">Stable</span>
-        </div>
-        <h3 class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Active Officers</h3>
-        <p class="text-3xl font-black text-slate-800 tabular-nums">{{activeOfficers()}}</p>
-      </div>
-    </div>
+  <div class="p-10 overflow-y-auto space-y-8">
+    <div *ngIf="errorMessage()" class="p-4 rounded-2xl bg-rose-50 text-rose-700 border border-rose-200 text-sm font-bold">{{errorMessage()}}</div>
+    <div *ngIf="successMessage()" class="p-4 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-sm font-bold">{{successMessage()}}</div>
 
-    <!-- Table Section -->
-    <div class="bg-white rounded-[40px] border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden">
-      <div class="p-6 border-b bg-slate-50/30 flex justify-between items-center px-10">
-        <div class="flex items-center gap-6">
-           <div class="relative">
-              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
-              <input type="text" placeholder="Search system users..." class="pl-12 pr-6 py-4 border-slate-200 bg-white rounded-2xl text-sm w-80 focus:ring-4 focus:ring-primary/5 focus:border-primary outline-none transition-all font-medium">
-           </div>
-           <button class="flex items-center gap-2 border-2 border-slate-100 px-6 py-3 rounded-2xl text-xs font-black text-slate-500 hover:bg-white hover:border-slate-200 transition-all uppercase tracking-widest">
-              <span class="material-symbols-outlined text-sm">filter_list</span> Filter
-           </button>
+    <section *ngIf="showAddOfficer()" class="bg-white rounded-[28px] border border-slate-200 p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-lg font-black text-slate-900">Provision Officer</h2>
+          <p class="text-sm text-slate-500">Backend only allows L1 and L2 officer roles here.</p>
         </div>
-        <button class="text-slate-400 hover:text-slate-600">
-          <span class="material-symbols-outlined">more_horiz</span>
+        <button type="button" (click)="showAddOfficer.set(false)" class="text-slate-400 hover:text-slate-600">
+          <span class="material-symbols-outlined">close</span>
         </button>
       </div>
-      
+
+      <form [formGroup]="officerForm" (ngSubmit)="submitOfficer()" class="grid grid-cols-4 gap-4 items-end">
+        <label class="space-y-2">
+          <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Full Name</span>
+          <input formControlName="fullName" class="w-full px-4 py-3 rounded-xl border border-slate-200" type="text">
+        </label>
+        <label class="space-y-2">
+          <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Email</span>
+          <input formControlName="email" class="w-full px-4 py-3 rounded-xl border border-slate-200" type="email">
+        </label>
+        <label class="space-y-2">
+          <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Phone</span>
+          <input formControlName="phone" class="w-full px-4 py-3 rounded-xl border border-slate-200" type="text">
+        </label>
+        <label class="space-y-2">
+          <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Role</span>
+          <select formControlName="role" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white">
+            <option value="ROLE_OFFICER_L1">L1 Officer</option>
+            <option value="ROLE_OFFICER_L2">L2 Officer</option>
+          </select>
+        </label>
+        <div class="col-span-4 flex justify-end">
+          <button type="submit" class="px-6 py-3 rounded-2xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest">Create Officer</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="grid grid-cols-4 gap-6">
+      <div class="bg-white p-6 rounded-[28px] border border-slate-200">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">Total Users</div>
+        <div class="text-3xl font-black mt-2">{{totalUsers()}}</div>
+      </div>
+      <div class="bg-white p-6 rounded-[28px] border border-slate-200">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">Active Officers</div>
+        <div class="text-3xl font-black mt-2">{{activeOfficers()}}</div>
+      </div>
+      <div class="bg-white p-6 rounded-[28px] border border-slate-200">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">Pages</div>
+        <div class="text-3xl font-black mt-2">{{totalPages()}}</div>
+      </div>
+      <div class="bg-white p-6 rounded-[28px] border border-slate-200">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">Active Session</div>
+        <div class="text-3xl font-black mt-2">{{users().length}}</div>
+      </div>
+    </section>
+
+    <div class="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
       <table class="w-full text-left">
         <thead>
           <tr class="text-[10px] font-black uppercase text-slate-400 border-b bg-slate-50/50 tracking-widest">
-            <th class="px-10 py-6">User Identity</th>
-            <th class="px-10 py-6">Access Level</th>
-            <th class="px-10 py-6">Status</th>
-            <th class="px-10 py-6">Security Clearance</th>
-            <th class="px-10 py-6 text-right">Actions</th>
+            <th class="px-8 py-5">User</th>
+            <th class="px-8 py-5">Role</th>
+            <th class="px-8 py-5">Status</th>
+            <th class="px-8 py-5">Clearance</th>
+            <th class="px-8 py-5 text-right">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
           <tr *ngIf="isLoading()">
-            <td colspan="5" class="px-10 py-10 text-center text-xs font-black uppercase tracking-widest text-slate-400">Loading users...</td>
-          </tr>
-          <tr *ngIf="!isLoading() && errorMessage()">
-            <td colspan="5" class="px-10 py-10 text-center text-xs font-black uppercase tracking-widest text-red-500">{{errorMessage()}}</td>
+            <td colspan="5" class="px-8 py-10 text-center text-xs font-black uppercase tracking-widest text-slate-400">Loading users...</td>
           </tr>
           <tr *ngIf="!isLoading() && !errorMessage() && users().length === 0">
-            <td colspan="5" class="px-10 py-10 text-center text-xs font-black uppercase tracking-widest text-slate-400">No users found</td>
+            <td colspan="5" class="px-8 py-10 text-center text-xs font-black uppercase tracking-widest text-slate-400">No users found</td>
           </tr>
-          <tr *ngFor="let user of users()" class="hover:bg-indigo-50/30 transition-all group cursor-pointer">
-            <td class="px-10 py-6">
+          <tr *ngFor="let user of users()" class="hover:bg-slate-50">
+            <td class="px-8 py-5">
               <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-600 font-black text-xs group-hover:bg-primary group-hover:text-white transition-all shadow-inner">{{getDisplayName(user).charAt(0)}}</div>
-                <div class="flex flex-col">
-                  <span class="font-black text-slate-800 text-sm tracking-tight">{{getDisplayName(user)}}</span>
-                  <span class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{{user.email}}</span>
+                <div class="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">{{getDisplayName(user).charAt(0)}}</div>
+                <div>
+                  <div class="font-black text-slate-900">{{getDisplayName(user)}}</div>
+                  <div class="text-[10px] uppercase tracking-widest text-slate-400">{{user.email}}</div>
                 </div>
               </div>
             </td>
-            <td class="px-10 py-6">
-              <span class="text-[10px] font-black text-primary bg-indigo-50 px-3 py-1.5 rounded-lg uppercase tracking-widest">{{getRoleLabel(user.role)}}</span>
+            <td class="px-8 py-5">
+              <span class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-black uppercase tracking-widest">{{getRoleLabel(user.role)}}</span>
             </td>
-            <td class="px-10 py-6">
-              <span [class]="'px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ' + getStatusClass(getUserStatus(user))">
-                {{getUserStatus(user)}}
-              </span>
+            <td class="px-8 py-5">
+              <span [class]="'px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ' + getStatusClass(getUserStatus(user))">{{getUserStatus(user)}}</span>
             </td>
-            <td class="px-10 py-6">
-              <div class="flex flex-col gap-2 w-32">
-                 <div class="h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                    <div class="h-full bg-primary shadow-[0_0_8px_rgba(36,56,156,0.5)]" [style.width.%]="getClearance(user)"></div>
-                 </div>
-                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{getClearance(user)}}% verified</span>
+            <td class="px-8 py-5">
+              <div class="flex flex-col gap-2 w-36">
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-slate-900" [style.width.%]="getClearance(user)"></div>
+                </div>
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{getClearance(user)}}% verified</span>
               </div>
             </td>
-            <td class="px-10 py-6 text-right">
-              <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                <button class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-slate-100">
-                  <span class="material-symbols-outlined text-[18px]">edit</span>
-                </button>
-                <button class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-slate-100">
-                  <span class="material-symbols-outlined text-[18px]">delete</span>
-                </button>
-              </div>
+            <td class="px-8 py-5 text-right">
+              <button type="button" (click)="toggleStatus(user)" [disabled]="actionBusyId() === user.id" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-widest disabled:opacity-50">
+                {{ user.isActive ? 'Deactivate' : 'Activate' }}
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
-      
-      <!-- Pagination -->
-      <div class="p-8 border-t bg-slate-50/50 flex justify-between items-center px-10">
-         <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Showing {{users().length}} of {{totalUsers()}} users</span>
-         <div class="flex gap-2">
-            <button class="w-10 h-10 border border-slate-200 rounded-xl hover:bg-white disabled:opacity-30 transition-all" disabled>
-               <span class="material-symbols-outlined text-sm">chevron_left</span>
-            </button>
-            <button class="w-10 h-10 border-2 border-primary bg-primary text-white rounded-xl font-black text-xs shadow-lg shadow-indigo-900/20">1</button>
-            <button class="w-10 h-10 border border-slate-200 rounded-xl hover:bg-white font-black text-xs transition-all">2</button>
-            <button class="w-10 h-10 border border-slate-200 rounded-xl hover:bg-white font-black text-xs transition-all">3</button>
-            <button class="w-10 h-10 border border-slate-200 rounded-xl hover:bg-white transition-all">
-               <span class="material-symbols-outlined text-sm">chevron_right</span>
-            </button>
-         </div>
-      </div>
     </div>
   </div>
 </div>

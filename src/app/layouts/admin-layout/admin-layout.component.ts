@@ -16,6 +16,11 @@ export class AdminLayoutComponent {
   currentUser = computed(() => this.authService.currentUser());
   displayName = computed(() => this.currentUser()?.fullName || 'Admin');
   roleLabel = computed(() => this.formatRole(this.currentUser()?.role || 'ADMIN'));
+  canManageConfigs = computed(() => ['ADMIN', 'SUPER_ADMIN'].includes(this.currentUser()?.role || ''));
+  canReviewApprovals = computed(() => (this.currentUser()?.role || '') === 'SUPER_ADMIN');
+  canManageUsers = computed(() => ['ADMIN', 'SUPER_ADMIN'].includes(this.currentUser()?.role || ''));
+  roleSummary = computed(() => this.canReviewApprovals() ? 'Checker' : 'Maker');
+  canViewAudit = computed(() => ['ADMIN', 'SUPER_ADMIN'].includes(this.currentUser()?.role || ''));
 
   private formatRole(role: string): string {
     switch (role) {

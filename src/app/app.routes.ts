@@ -38,6 +38,8 @@ export const routes: Routes = [
       { path: '', redirectTo: 'users', pathMatch: 'full' },
       { path: 'users', loadComponent: () => import('./admin/user-management/user-management.component').then(c => c.UserManagementComponent) },
       { path: 'screening', loadComponent: () => import('./admin/screening-config/screening-config.component').then(c => c.ScreeningConfigComponent) },
+      { path: 'reports', loadComponent: () => import('./admin/reports/reports.component').then(c => c.ReportsComponent) },
+      { path: 'audit', loadComponent: () => import('./admin/audit-timeline/audit-timeline.component').then(c => c.AuditTimelineComponent) },
       { path: 'approvals', loadComponent: () => import('./admin/approval-dashboard/approval-dashboard.component').then(c => c.ApprovalDashboardComponent) },
       { path: 'emergency', loadComponent: () => import('./admin/emergency-control/emergency-control.component').then(c => c.EmergencyControlComponent) }
     ]

@@ -1,92 +1,87 @@
-<div class="h-screen bg-red-50/30 flex items-center justify-center p-10 font-['Inter']">
-  <div class="max-w-4xl w-full bg-white rounded-[40px] shadow-2xl shadow-red-200/50 border border-red-100 overflow-hidden flex flex-col">
-    <!-- Critical Header -->
-    <div class="bg-red-600 p-10 text-white relative">
-       <div class="relative z-10 flex justify-between items-start">
-          <div class="space-y-2">
-             <div class="inline-flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/20 backdrop-blur-md">
-                <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                {{roleLabel()}} Access Required
-             </div>
-             <h1 class="text-3xl font-black tracking-tighter">Emergency Protocol Control</h1>
-             <p class="text-red-100 text-sm max-w-md leading-relaxed opacity-90">High-risk system interventions. All actions taken here are logged and require dual-factor authorization for execution.</p>
+<div class="h-screen bg-slate-100 flex items-center justify-center p-10">
+  <div class="max-w-5xl w-full bg-white rounded-[32px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+    <div class="bg-slate-950 p-10 text-white relative">
+      <div class="relative z-10 flex justify-between items-start">
+        <div class="space-y-2">
+          <div class="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/10 backdrop-blur-md">
+            <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+            {{roleLabel()}} Emergency Panel
           </div>
-          <span class="material-symbols-outlined text-6xl opacity-20">emergency</span>
-       </div>
-       <!-- Warning Stripes -->
-       <div class="absolute bottom-0 left-0 w-full h-2 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#fff2_10px,#fff2_20px)]"></div>
+          <h1 class="text-3xl font-black tracking-tighter">Emergency Protocol Control</h1>
+          <p class="text-slate-300 text-sm max-w-md leading-relaxed opacity-90">High-risk system interventions stay behind checker access and should only be wired to backend actions that already exist.</p>
+        </div>
+        <span class="material-symbols-outlined text-6xl opacity-20">emergency</span>
+      </div>
+      <div class="absolute bottom-0 left-0 w-full h-2 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#fff2_10px,#fff2_20px)]"></div>
     </div>
 
     <div class="flex-1 p-12 grid grid-cols-2 gap-12 overflow-y-auto">
-       <!-- Action Group: System Access -->
-       <div class="space-y-6">
-          <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-             <span class="material-symbols-outlined text-sm">lock</span>
-             Access Control
-          </h3>
-          <div class="space-y-4">
-             <div class="p-6 rounded-3xl border-2 border-slate-100 hover:border-red-500/20 transition-all group">
-                <div class="flex justify-between items-center mb-4">
-                   <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-red-500 transition-colors">
-                      <span class="material-symbols-outlined">block</span>
-                   </div>
-                   <div class="w-10 h-5 bg-slate-200 rounded-full relative p-1 cursor-pointer">
-                      <div class="w-3 h-3 bg-white rounded-full"></div>
-                   </div>
-                </div>
-                <h4 class="text-sm font-black text-slate-800">Global Onboarding Freeze</h4>
-                <p class="text-[11px] text-slate-400 mt-1">Immediately stop all new candidate registrations system-wide.</p>
-             </div>
-
-             <div class="p-6 rounded-3xl border-2 border-slate-100 hover:border-red-500/20 transition-all group">
-                <div class="flex justify-between items-center mb-4">
-                   <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-red-500 transition-colors">
-                      <span class="material-symbols-outlined">shield_moon</span>
-                   </div>
-                   <div class="w-10 h-5 bg-slate-200 rounded-full relative p-1 cursor-pointer">
-                      <div class="w-3 h-3 bg-white rounded-full"></div>
-                   </div>
-                </div>
-                <h4 class="text-sm font-black text-slate-800">Maintenance Mode</h4>
-                <p class="text-[11px] text-slate-400 mt-1">Restrict officer access to read-only for scheduled maintenance.</p>
-             </div>
+      <div class="space-y-6">
+        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">lock</span>
+          Access Control
+        </h3>
+        <div class="space-y-4">
+          <div class="p-6 rounded-3xl border-2 border-slate-100 hover:border-slate-300 transition-all group">
+            <div class="flex justify-between items-center mb-4">
+              <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-slate-900 transition-colors">
+                <span class="material-symbols-outlined">block</span>
+              </div>
+              <div class="w-10 h-5 bg-slate-200 rounded-full relative p-1">
+                <div class="w-3 h-3 bg-white rounded-full"></div>
+              </div>
+            </div>
+            <h4 class="text-sm font-black text-slate-800">Global Onboarding Freeze</h4>
+            <p class="text-[11px] text-slate-400 mt-1">Immediately stop all new candidate registrations system-wide.</p>
           </div>
-       </div>
 
-       <!-- Action Group: Data Intervention -->
-       <div class="space-y-6">
-          <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-             <span class="material-symbols-outlined text-sm">database</span>
-             Data Intervention
-          </h3>
-          <div class="space-y-4">
-             <button class="w-full p-6 rounded-3xl border-2 border-red-500 border-dashed bg-red-50/50 flex flex-col items-start gap-3 hover:bg-red-50 transition-all text-left">
-                <span class="material-symbols-outlined text-red-600">sync_problem</span>
-                <span class="text-sm font-black text-red-600 tracking-tight">Mass Re-Verification</span>
-                <p class="text-[10px] text-red-500 font-bold uppercase leading-tight opacity-70">Trigger background re-screening for all {{activeCandidates()}} active candidates against current lists.</p>
-             </button>
-
-             <button class="w-full p-6 rounded-3xl border-2 border-slate-100 bg-slate-50 flex flex-col items-start gap-3 hover:border-slate-200 transition-all text-left">
-                <span class="material-symbols-outlined text-slate-500">history_edu</span>
-                <span class="text-sm font-black text-slate-700 tracking-tight">Revoke API Tokens</span>
-                <p class="text-[11px] text-slate-400 leading-tight">Immediately invalidate all third-party integration keys for external partners.</p>
-             </button>
+          <div class="p-6 rounded-3xl border-2 border-slate-100 hover:border-slate-300 transition-all group">
+            <div class="flex justify-between items-center mb-4">
+              <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-slate-900 transition-colors">
+                <span class="material-symbols-outlined">shield_moon</span>
+              </div>
+              <div class="w-10 h-5 bg-slate-200 rounded-full relative p-1">
+                <div class="w-3 h-3 bg-white rounded-full"></div>
+              </div>
+            </div>
+            <h4 class="text-sm font-black text-slate-800">Maintenance Mode</h4>
+            <p class="text-[11px] text-slate-400 mt-1">Restrict officer access to read-only for scheduled maintenance.</p>
           </div>
-       </div>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">database</span>
+          Data Intervention
+        </h3>
+        <div class="space-y-4">
+          <button class="w-full p-6 rounded-3xl border-2 border-slate-200 border-dashed bg-slate-50 flex flex-col items-start gap-3 hover:bg-slate-100 transition-all text-left">
+            <span class="material-symbols-outlined text-slate-700">sync_problem</span>
+            <span class="text-sm font-black text-slate-900 tracking-tight">Mass Re-Verification</span>
+            <p class="text-[10px] text-slate-500 font-bold uppercase leading-tight opacity-70">Trigger background re-screening for all {{activeCandidates()}} active candidates against current lists.</p>
+          </button>
+
+          <button class="w-full p-6 rounded-3xl border-2 border-slate-100 bg-slate-50 flex flex-col items-start gap-3 hover:border-slate-200 transition-all text-left">
+            <span class="material-symbols-outlined text-slate-500">history_edu</span>
+            <span class="text-sm font-black text-slate-700 tracking-tight">Revoke API Tokens</span>
+            <p class="text-[11px] text-slate-400 leading-tight">Immediately invalidate all third-party integration keys for external partners.</p>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Footer Security Banner -->
     <div class="p-8 border-t bg-slate-50 flex justify-between items-center px-12">
-       <div class="flex items-center gap-4">
-          <div class="flex flex-col">
-             <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Session</span>
-             <span class="text-xs font-bold text-slate-600">{{displayName()}} - {{roleLabel()}}</span>
-          </div>
-       </div>
-       <div class="flex gap-4">
-          <button class="text-xs font-bold text-slate-400 hover:text-slate-600 uppercase">Discard Session</button>
-          <button class="px-6 py-3 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:bg-slate-800 transition-all active:scale-95">Verify & Execute</button>
-       </div>
+      <div class="flex items-center gap-4">
+        <div class="flex flex-col">
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Session</span>
+          <span class="text-xs font-bold text-slate-600">{{displayName()}} - {{roleLabel()}}</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Open approvals: {{activeRequests()}}</span>
+        <button class="px-6 py-3 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:bg-slate-800 transition-all active:scale-95">Verify & Execute</button>
+      </div>
     </div>
   </div>
 </div>

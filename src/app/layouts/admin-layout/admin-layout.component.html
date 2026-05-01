@@ -1,41 +1,50 @@
-<div class="flex h-screen bg-surface">
-  <!-- Admin Sidebar -->
-  <aside class="w-64 bg-[#1A237E] text-white flex flex-col p-6 shadow-xl z-50">
-    <div class="text-xl font-black mb-10 flex items-center gap-3 tracking-tighter">
-      <img src="/onboardguard_logo_1777340930385.png" class="w-10 h-10 object-contain invert brightness-0" alt="Logo">
-      ADMIN CORE
+<div class="flex h-screen bg-slate-950 text-white">
+  <aside class="w-72 bg-slate-950 border-r border-white/10 flex flex-col p-6">
+    <div class="flex items-center gap-3 mb-10">
+      <img src="/onboardguard_logo_1777340930385.png" class="w-10 h-10 object-contain" alt="Logo">
+      <div>
+        <div class="text-xl font-black tracking-tight">Admin Core</div>
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400">{{roleSummary()}}</div>
+      </div>
     </div>
-    <nav class="flex-1 space-y-1">
-      <a routerLink="/admin/users" routerLinkActive="bg-white/10" class="flex items-center gap-3 p-3 rounded-xl font-bold transition-all hover:bg-white/5">
+    <nav class="flex-1 space-y-2">
+      <a routerLink="/admin/users" routerLinkActive="bg-white/10 text-white" class="flex items-center gap-3 p-3 rounded-2xl font-bold text-slate-300 hover:bg-white/5 transition-all">
         <span class="material-symbols-outlined">group</span>
         User Management
       </a>
-      <a routerLink="/admin/screening" routerLinkActive="bg-white/10" class="flex items-center gap-3 p-3 rounded-xl font-bold transition-all hover:bg-white/5">
-        <span class="material-symbols-outlined">settings_input_component</span>
-        Screening Config
+      <a *ngIf="canManageConfigs()" routerLink="/admin/screening" routerLinkActive="bg-white/10 text-white" class="flex items-center gap-3 p-3 rounded-2xl font-bold text-slate-300 hover:bg-white/5 transition-all">
+        <span class="material-symbols-outlined">tune</span>
+        System Config
       </a>
-      <a routerLink="/admin/approvals" routerLinkActive="bg-white/10" class="flex items-center gap-3 p-3 rounded-xl font-bold transition-all hover:bg-white/5">
-        <span class="material-symbols-outlined">verified</span>
-        Approval Center
+      <a routerLink="/admin/reports" routerLinkActive="bg-white/10 text-white" class="flex items-center gap-3 p-3 rounded-2xl font-bold text-slate-300 hover:bg-white/5 transition-all">
+        <span class="material-symbols-outlined">monitoring</span>
+        Reporting
       </a>
-      <a routerLink="/admin/emergency" routerLinkActive="bg-white/10" class="flex items-center gap-3 p-3 rounded-xl font-bold transition-all hover:bg-white/5">
-        <span class="material-symbols-outlined text-red-400">emergency</span>
+      <a *ngIf="canViewAudit()" routerLink="/admin/audit" routerLinkActive="bg-white/10 text-white" class="flex items-center gap-3 p-3 rounded-2xl font-bold text-slate-300 hover:bg-white/5 transition-all">
+        <span class="material-symbols-outlined">history</span>
+        Audit Timeline
+      </a>
+      <a *ngIf="canReviewApprovals()" routerLink="/admin/approvals" routerLinkActive="bg-white/10 text-white" class="flex items-center gap-3 p-3 rounded-2xl font-bold text-slate-300 hover:bg-white/5 transition-all">
+        <span class="material-symbols-outlined">fact_check</span>
+        Maker-Checker Inbox
+      </a>
+      <a *ngIf="canReviewApprovals()" routerLink="/admin/emergency" routerLinkActive="bg-white/10 text-white" class="flex items-center gap-3 p-3 rounded-2xl font-bold text-slate-300 hover:bg-white/5 transition-all">
+        <span class="material-symbols-outlined text-red-300">emergency</span>
         Emergency Control
       </a>
     </nav>
     <div class="pt-6 border-t border-white/10">
-      <div class="flex items-center gap-3 p-2 bg-white/5 rounded-2xl">
-        <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-xs font-black shadow-inner">{{displayName().charAt(0)}}</div>
-        <div class="flex flex-col">
-          <span class="text-xs font-black">{{displayName()}}</span>
-          <span class="text-[10px] opacity-60">{{roleLabel()}}</span>
+      <div class="flex items-center gap-3 p-3 bg-white/5 rounded-2xl">
+        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xs font-black">{{displayName().charAt(0)}}</div>
+        <div class="flex flex-col min-w-0">
+          <span class="text-sm font-black truncate">{{displayName()}}</span>
+          <span class="text-[10px] uppercase tracking-[0.2em] text-slate-400 truncate">{{roleLabel()}}</span>
         </div>
       </div>
     </div>
   </aside>
 
-  <!-- Main Content -->
-  <main class="flex-1 flex flex-col overflow-hidden">
+  <main class="flex-1 flex flex-col overflow-hidden bg-slate-100 text-slate-900">
     <router-outlet></router-outlet>
   </main>
 </div>

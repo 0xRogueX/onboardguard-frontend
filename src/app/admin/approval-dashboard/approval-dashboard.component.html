@@ -1,119 +1,90 @@
-<div class="min-h-screen bg-[#fcfdfe] flex flex-col">
-  <!-- Navigation Header -->
-  <header class="h-20 bg-white border-b px-10 flex items-center justify-between shadow-sm sticky top-0 z-50">
-    <div class="flex items-center gap-10">
-      <div class="text-2xl font-black tracking-tighter text-slate-900 flex items-center gap-2">
-         <span class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white text-base">O</span>
-         OnboardGuard
-      </div>
-      <nav class="flex gap-2">
-         <a href="#" class="px-5 py-2 text-sm font-bold text-slate-800 bg-slate-50 rounded-full">Overview</a>
-         <a href="#" class="px-5 py-2 text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors">Users</a>
-         <a href="#" class="px-5 py-2 text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors">Reports</a>
-         <a href="#" class="px-5 py-2 text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors">Settings</a>
-      </nav>
+<div class="flex-1 flex flex-col overflow-hidden">
+  <header class="h-20 bg-white border-b flex items-center justify-between px-10">
+    <div>
+      <h1 class="text-xl font-black text-slate-900 tracking-tight">Maker-Checker Inbox</h1>
+      <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Visible to Super Admin checkers only</p>
     </div>
-    <div class="flex items-center gap-4">
-       <button class="w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-50">
-          <span class="material-symbols-outlined text-[20px]">notifications</span>
-       </button>
-       <div class="flex items-center gap-3 pl-4 border-l">
-          <span class="text-sm font-bold text-slate-700">{{displayName()}}</span>
-          <div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-xs shadow-inner">{{displayName().charAt(0)}}</div>
-       </div>
+    <div class="flex items-center gap-3">
+      <span class="px-3 py-1.5 rounded-full bg-slate-100 text-xs font-black uppercase tracking-widest text-slate-600">{{displayName()}}</span>
+      <button (click)="loadDashboard()" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest">Refresh</button>
     </div>
   </header>
 
-  <main class="flex-1 p-10 max-w-7xl mx-auto w-full space-y-10">
-    <!-- Hero Stats -->
-    <div class="grid grid-cols-4 gap-8">
-       <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-          <div class="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-6">
-             <span class="material-symbols-outlined">person_add</span>
-          </div>
-          <p class="text-slate-400 text-xs font-black uppercase tracking-widest mb-1">New Candidates</p>
-          <div class="flex items-end gap-3">
-             <h3 class="text-3xl font-black text-slate-800">{{stats()?.candidateStats?.totalOnboarded || 0}}</h3>
-             <span class="text-green-500 text-xs font-bold mb-1">+18.5%</span>
-          </div>
-       </div>
-       <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-          <div class="w-12 h-12 bg-indigo-50 text-primary rounded-2xl flex items-center justify-center mb-6">
-             <span class="material-symbols-outlined">verified</span>
-          </div>
-          <p class="text-slate-400 text-xs font-black uppercase tracking-widest mb-1">Total Cleared</p>
-          <div class="flex items-end gap-3">
-             <h3 class="text-3xl font-black text-slate-800">{{stats()?.candidateStats?.cleared || 0}}</h3>
-             <span class="text-slate-400 text-xs font-bold mb-1">Overall</span>
-          </div>
-       </div>
-       <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-          <div class="w-12 h-12 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-6">
-             <span class="material-symbols-outlined">report</span>
-          </div>
-          <p class="text-slate-400 text-xs font-black uppercase tracking-widest mb-1">Open Alerts</p>
-          <div class="flex items-end gap-3">
-             <h3 class="text-3xl font-black text-slate-800">{{stats()?.alertStats?.openAlerts || 0}}</h3>
-             <span class="text-red-500 text-xs font-bold mb-1">+12%</span>
-          </div>
-       </div>
-       <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-          <div class="w-12 h-12 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center mb-6">
-             <span class="material-symbols-outlined">timer</span>
-          </div>
-          <p class="text-slate-400 text-xs font-black uppercase tracking-widest mb-1">Avg Verification</p>
-          <div class="flex items-end gap-3">
-             <h3 class="text-3xl font-black text-slate-800">{{stats()?.casePerformanceStats?.averageResolutionTimeHours || 0}}h</h3>
-             <span class="text-green-500 text-xs font-bold mb-1">-15.2%</span>
-          </div>
-       </div>
-    </div>
+  <main class="flex-1 overflow-y-auto p-10 space-y-8">
+    <div *ngIf="errorMessage()" class="p-4 rounded-2xl bg-rose-50 text-rose-700 border border-rose-200 text-sm font-bold">{{errorMessage()}}</div>
 
-    <!-- Main Grid -->
-    <div class="grid grid-cols-3 gap-10">
-       <!-- Pending Approvals -->
-       <div class="col-span-2 space-y-6">
-          <div class="flex items-center justify-between px-2">
-             <h3 class="text-xl font-black text-slate-800">System Approvals</h3>
-             <button class="text-xs font-bold text-primary flex items-center gap-1 hover:underline">View Queue <span class="material-symbols-outlined text-[16px]">arrow_right_alt</span></button>
-          </div>
-          <div class="space-y-4">
-             <div *ngIf="!isLoading() && approvals().length === 0" class="bg-white p-6 rounded-[32px] border border-slate-100 text-sm font-bold text-slate-400">No pending approvals.</div>
-             <div *ngFor="let approval of approvals()" class="bg-white p-6 rounded-[32px] border border-slate-100 flex items-center gap-6 group hover:border-primary/20 hover:shadow-md transition-all">
-                <div class="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 font-black text-lg border-2 border-white shadow-sm">{{(approval.targetEntityType || 'A').charAt(0)}}</div>
-                <div class="flex-1">
-                   <div class="flex items-center gap-2 mb-1">
-                      <h4 class="text-sm font-black text-slate-800">{{getTitle(approval)}}</h4>
-                      <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-indigo-50 text-primary">{{approval.status}}</span>
-                   </div>
-                   <p class="text-xs text-slate-400 italic">Requested by {{approval.requestedByName || 'Unknown'}} - {{getPayloadSummary(approval)}}</p>
-                </div>
-                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                   <button (click)="reviewApproval(approval.id, 'REJECT')" class="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-100 transition-all"><span class="material-symbols-outlined text-[20px]">close</span></button>
-                   <button (click)="reviewApproval(approval.id, 'APPROVE')" class="p-3 bg-green-50 text-green-500 rounded-2xl hover:bg-green-100 transition-all"><span class="material-symbols-outlined text-[20px]">check</span></button>
-                </div>
-             </div>
-          </div>
-       </div>
+    <section class="grid grid-cols-4 gap-4">
+      <div class="bg-white border border-slate-200 rounded-2xl p-5">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">Pending Requests</div>
+        <div class="text-3xl font-black mt-2">{{approvals().length}}</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">Pending Maker-Checker</div>
+        <div class="text-3xl font-black mt-2">{{stats()?.pendingMakerCheckerRequests || 0}}</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">Open Alerts</div>
+        <div class="text-3xl font-black mt-2">{{stats()?.alertStats?.openAlerts || 0}}</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">Average Resolution</div>
+        <div class="text-3xl font-black mt-2">{{stats()?.casePerformanceStats?.averageResolutionTimeHours || 0}}h</div>
+      </div>
+    </section>
 
-       <!-- Officer Performance -->
-       <div class="space-y-6">
-          <h3 class="text-xl font-black text-slate-800 px-2">Compliance Load</h3>
-          <div class="bg-white rounded-[40px] border border-slate-100 p-8 shadow-sm">
-             <div class="space-y-8">
-                <div *ngFor="let officer of stats()?.categoryHitFrequency | keyvalue" class="space-y-3">
-                   <div class="flex justify-between items-center">
-                      <span class="text-xs font-bold text-slate-700">{{officer.key}}</span>
-                      <span class="text-xs font-black text-slate-400">{{officer.value}}</span>
-                   </div>
-                   <div class="h-2 bg-slate-50 rounded-full overflow-hidden">
-                      <div class="h-full rounded-full bg-indigo-500" [style.width.%]="officer.value"></div>
-                   </div>
-                </div>
-             </div>
-             <button class="w-full mt-10 py-4 bg-slate-50 text-slate-500 rounded-3xl text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-all">Download Audit Report</button>
+    <section class="grid grid-cols-3 gap-8">
+      <div class="col-span-2 bg-white rounded-3xl border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-lg font-black text-slate-900">Approval Requests</h2>
+          <span class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">{{isChecker() ? 'Checker access' : 'Read only'}}</span>
+        </div>
+
+        <div *ngIf="isLoading()" class="py-16 text-center text-xs font-black uppercase tracking-widest text-slate-400">Loading approvals...</div>
+        <div *ngIf="!isLoading() && approvals().length === 0" class="py-16 text-center text-sm font-bold text-slate-400">No pending requests right now.</div>
+
+        <div *ngFor="let approval of approvals()" class="border border-slate-200 rounded-2xl p-5 mb-4">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-black text-slate-900">{{getTitle(approval)}}</h3>
+                <span [class]="'text-[10px] uppercase tracking-widest font-black px-2 py-1 rounded-full border ' + getStatusTone(approval.status)">{{approval.status}}</span>
+              </div>
+              <p class="text-sm text-slate-500 mt-2">{{getPayloadSummary(approval)}}</p>
+              <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400 mt-2">Requested by {{approval.requestedByName}} on {{approval.requestedAt | date:'medium'}}</p>
+            </div>
+
+            <div class="flex gap-2">
+              <button type="button" [disabled]="actionBusyId() === approval.id" (click)="reviewApproval(approval.id, 'REJECTED')" class="px-4 py-2 rounded-xl border border-rose-200 text-rose-600 text-xs font-black uppercase tracking-widest disabled:opacity-50">Reject</button>
+              <button type="button" [disabled]="actionBusyId() === approval.id" (click)="reviewApproval(approval.id, 'APPROVED')" class="px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-black uppercase tracking-widest disabled:opacity-50">Approve</button>
+            </div>
           </div>
-       </div>
-    </div>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="bg-white rounded-3xl border border-slate-200 p-6">
+          <h2 class="text-lg font-black text-slate-900 mb-4">Checker Actions</h2>
+          <div class="space-y-3 text-sm text-slate-600">
+            <div class="flex items-center justify-between"><span>Approve request</span><span class="font-black text-emerald-600">Enabled</span></div>
+            <div class="flex items-center justify-between"><span>Reject with reason</span><span class="font-black text-rose-600">Enabled</span></div>
+            <div class="flex items-center justify-between"><span>Bypass self-review</span><span class="font-black text-slate-400">Backend-guarded</span></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 p-6">
+          <h2 class="text-lg font-black text-slate-900 mb-4">Compliance Mix</h2>
+          <div class="space-y-3">
+            <div *ngFor="let item of stats()?.categoryHitFrequency | keyvalue" class="space-y-1">
+              <div class="flex justify-between text-xs font-bold text-slate-500 uppercase tracking-widest">
+                <span>{{item.key}}</span><span>{{item.value}}</span>
+              </div>
+              <div class="h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div class="h-full bg-slate-900" [style.width.%]="item.value"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 </div>

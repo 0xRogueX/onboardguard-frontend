@@ -15,6 +15,7 @@ export class EmergencyControlComponent implements OnInit {
   private authService = inject(AuthService);
 
   activeCandidates = signal(0);
+  activeRequests = signal(0);
   displayName = computed(() => this.authService.currentUser()?.fullName || 'Admin');
   roleLabel = computed(() => this.formatRole(this.authService.currentUser()?.role || 'ADMIN'));
 
@@ -22,6 +23,11 @@ export class EmergencyControlComponent implements OnInit {
     this.adminService.getDashboardStats().subscribe({
       next: (response) => this.activeCandidates.set(response.data.candidateStats.totalOnboarded),
       error: () => this.activeCandidates.set(0)
+    });
+
+    this.adminService.getPendingApprovals().subscribe({
+      next: (response) => this.activeRequests.set(response.data.length),
+      error: () => this.activeRequests.set(0)
     });
   }
 

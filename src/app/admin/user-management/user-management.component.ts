@@ -1,24 +1,37 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AdminService } from '../../services/admin.service';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AdminService, CreateOfficerRequest } from '../../services/admin.service';
 import { UserProfile } from '../../models';
 
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './user-management.component.html',
   styleUrl: './user-management.component.css'
 })
 export class UserManagementComponent implements OnInit {
   private adminService = inject(AdminService);
+  private fb = inject(FormBuilder);
 
   users = signal<UserProfile[]>([]);
   totalUsers = signal(0);
   totalPages = signal(0);
   isLoading = signal(true);
   errorMessage = signal('');
+  successMessage = signal('');
+  actionBusyId = signal<number | null>(null);
+  showAddOfficer = signal(false);
+
   activeOfficers = computed(() => this.users().filter(user => user.isActive && ['ROLE_OFFICER_L1', 'ROLE_OFFICER_L2', 'L1_OFFICER', 'L2_OFFICER'].includes(user.role)).length);
+
+  officerForm = this.fb.group({
+    fullName: ['', [Validators.required, Validators.minLength(2)]],
+    email: ['', [Validators.required, Validators.email]],
+    phone: [''],
+    role: ['ROLE_OFFICER_L1' as 'ROLE_OFFICER_L1' | 'ROLE_OFFICER_L2', Validators.required]
+  });
 
   ngOnInit() {
     this.loadUsers();
@@ -38,6 +51,51 @@ export class UserManagementComponent implements OnInit {
       error: (err) => {
         this.errorMessage.set(err.error?.message || 'Unable to load users from backend.');
         this.isLoading.set(false);
+      }
+    });
+  }
+
+  submitOfficer() {
+    if (this.officerForm.invalid) {
+      this.officerForm.markAllAsTouched();
+      this.errorMessage.set('Please complete the officer form.');
+      return;
+    }
+
+    const payload: CreateOfficerRequest = {
+      fullName: this.officerForm.value.fullName!.trim(),
+      email: this.officerForm.value.email!.trim(),
+      phone: this.officerForm.value.phone?.trim() || null,
+      role: this.officerForm.value.role as 'ROLE_OFFICER_L1' | 'ROLE_OFFICER_L2'
+    };
+
+    this.actionBusyId.set(-1);
+    this.adminService.addOfficer(payload).subscribe({
+      next: (response) => {
+        this.successMessage.set(response.message || 'Officer created successfully.');
+        this.errorMessage.set('');
+        this.actionBusyId.set(null);
+        this.officerForm.reset({ role: 'ROLE_OFFICER_L1' });
+        this.showAddOfficer.set(false);
+        this.loadUsers();
+      },
+      error: (err) => {
+        this.errorMessage.set(err.error?.message || 'Unable to create officer.');
+        this.actionBusyId.set(null);
+      }
+    });
+  }
+
+  toggleStatus(user: UserProfile) {
+    this.actionBusyId.set(user.id);
+    this.adminService.toggleUserStatus(user.id, !user.isActive).subscribe({
+      next: () => {
+        this.actionBusyId.set(null);
+        this.loadUsers();
+      },
+      error: (err) => {
+        this.actionBusyId.set(null);
+        this.errorMessage.set(err.error?.message || 'Unable to update user status.');
       }
     });
   }
@@ -79,10 +137,10 @@ export class UserManagementComponent implements OnInit {
 
   getStatusClass(status: string) {
     switch (status) {
-      case 'Active': return 'bg-green-100 text-green-700 border border-green-200 shadow-sm';
-      case 'Pending': return 'bg-yellow-100 text-yellow-700 border border-yellow-200 shadow-sm';
-      case 'Suspended': return 'bg-red-100 text-red-700 border border-red-200 shadow-sm';
-      default: return 'bg-gray-100 text-gray-700 border border-gray-200 shadow-sm';
+      case 'Active': return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+      case 'Pending': return 'bg-amber-50 text-amber-700 border border-amber-200';
+      case 'Suspended': return 'bg-rose-50 text-rose-700 border border-rose-200';
+      default: return 'bg-slate-100 text-slate-700 border border-slate-200';
     }
   }
 }

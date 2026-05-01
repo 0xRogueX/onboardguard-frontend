@@ -1,0 +1,46 @@
+<div class="flex-1 flex flex-col overflow-hidden">
+  <header class="h-20 bg-white border-b flex items-center justify-between px-10">
+    <div>
+      <h1 class="text-xl font-black text-slate-900 tracking-tight uppercase">Audit Timeline</h1>
+      <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Entity history from /admin/audit-logs/timeline</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <select [(ngModel)]="entityType" [ngModelOptions]="{standalone: true}" class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm">
+        <option value="SYSTEM_CONFIG">System Config</option>
+        <option value="USER">User</option>
+        <option value="CASE">Case</option>
+        <option value="ALERT">Alert</option>
+        <option value="CANDIDATE">Candidate</option>
+      </select>
+      <input type="number" [(ngModel)]="entityId" [ngModelOptions]="{standalone: true}" class="w-28 px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm" placeholder="Entity ID">
+      <button (click)="loadTimeline()" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest">Load</button>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-y-auto p-10 space-y-6">
+    <div *ngIf="errorMessage()" class="p-4 rounded-2xl bg-rose-50 text-rose-700 border border-rose-200 text-sm font-bold">{{errorMessage()}}</div>
+    <div *ngIf="isLoading()" class="text-xs font-black uppercase tracking-widest text-slate-400">Loading timeline...</div>
+
+    <div *ngIf="!isLoading() && timeline().length === 0" class="bg-white rounded-3xl border border-slate-200 p-8 text-slate-400 text-sm font-bold">
+      No timeline entries found for this entity.
+    </div>
+
+    <div class="space-y-4">
+      <div *ngFor="let item of timeline()" class="bg-white rounded-3xl border border-slate-200 p-6 flex items-start gap-4">
+        <div class="w-12 h-12 rounded-full bg-slate-900 text-white flex items-center justify-center font-black text-sm">
+          {{item.action.charAt(0)}}
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center gap-3">
+            <h3 class="font-black text-slate-900">{{item.action}}</h3>
+            <span class="text-[10px] uppercase tracking-widest px-2 py-1 rounded-full bg-slate-100 text-slate-600">{{item.actorRole}}</span>
+          </div>
+          <p class="text-sm text-slate-600 mt-1">{{item.remarks}}</p>
+          <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400 mt-2">
+            {{item.oldStatus}} -> {{item.newStatus}} | By {{item.performedBy}} | {{item.createdAt | date:'medium'}}
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

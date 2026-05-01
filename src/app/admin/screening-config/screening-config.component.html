@@ -1,99 +1,85 @@
 <div class="flex-1 flex flex-col overflow-hidden">
-  <header class="h-20 bg-white border-b flex items-center justify-between px-10 shadow-sm">
-    <div class="flex items-center gap-4">
-       <h1 class="text-xl font-black text-slate-800 tracking-tight uppercase">Screening Engine</h1>
-       <span class="px-2 py-1 rounded bg-indigo-50 text-primary text-[10px] font-black uppercase tracking-widest border border-indigo-100">Config Mode</span>
+  <header class="h-20 bg-white border-b flex items-center justify-between px-10">
+    <div>
+      <h1 class="text-xl font-black text-slate-900 tracking-tight">System Config Maker</h1>
+      <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Admin maker flow sends changes for checker approval</p>
     </div>
-    <div class="flex gap-4">
-      <button class="px-6 py-3 text-xs font-black uppercase tracking-widest text-slate-400 border-2 border-slate-100 rounded-2xl hover:bg-slate-50 transition-all">Reset Defaults</button>
-      <button class="px-6 py-3 text-xs font-black uppercase tracking-widest bg-primary text-white rounded-2xl shadow-xl shadow-indigo-900/20 hover:bg-primary-container transition-all active:scale-95">Save Engine State</button>
-    </div>
+    <button (click)="loadConfigs()" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest">Reload</button>
   </header>
 
-  <div class="p-10 overflow-y-auto space-y-10 max-w-6xl mx-auto w-full">
-    <!-- Section: Identity Verification -->
-    <section class="bg-white rounded-[40px] border border-slate-100 p-10 space-y-10 shadow-sm">
-      <div class="flex justify-between items-start">
-        <div class="space-y-1">
-          <h2 class="text-xl font-black text-slate-900 tracking-tight">Identity Verification (KYC)</h2>
-          <p class="text-xs font-medium text-slate-400">Configure global rules for identity document verification.</p>
-        </div>
-        <div class="flex items-center gap-3 bg-green-50 px-4 py-2 rounded-2xl border border-green-100">
-          <span class="text-[10px] font-black text-green-600 uppercase tracking-widest">Active Status</span>
-          <div class="w-10 h-5 bg-green-500 rounded-full relative p-1 cursor-pointer">
-            <div class="w-3 h-3 bg-white rounded-full ml-auto shadow-sm"></div>
-          </div>
-        </div>
-      </div>
+  <main class="flex-1 overflow-y-auto p-10 space-y-8">
+    <div *ngIf="errorMessage()" class="p-4 rounded-2xl bg-rose-50 text-rose-700 border border-rose-200 text-sm font-bold">{{errorMessage()}}</div>
+    <div *ngIf="successMessage()" class="p-4 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-sm font-bold">{{successMessage()}}</div>
 
-      <div class="grid grid-cols-2 gap-12">
-        <div class="space-y-6">
-          <label class="block space-y-3">
-            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Allowed Documents</span>
-            <div class="flex flex-wrap gap-2">
-              <span *ngFor="let config of configs()" class="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-2 hover:border-primary/30 transition-all">
-                {{config.configKey}}
-                <button class="text-slate-300 hover:text-red-500"><span class="material-symbols-outlined text-[16px]">close</span></button>
-              </span>
-              <button class="px-4 py-2 border-2 border-dashed border-slate-200 rounded-xl text-xs font-black text-primary flex items-center gap-2 hover:border-primary/50 transition-all">
-                <span class="material-symbols-outlined text-[18px]">add</span> Add Doc
+    <section class="grid grid-cols-4 gap-4">
+      <div class="bg-white border border-slate-200 rounded-2xl p-5">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">Configs</div>
+        <div class="text-3xl font-black mt-2">{{totalConfigs()}}</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">Sensitive</div>
+        <div class="text-3xl font-black mt-2">{{sensitiveConfigs()}}</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">Screening</div>
+        <div class="text-3xl font-black mt-2">{{screeningConfigs()}}</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">Storage</div>
+        <div class="text-3xl font-black mt-2">{{storageConfigs()}}</div>
+      </div>
+    </section>
+
+    <section class="space-y-6">
+      <div *ngIf="isLoading()" class="text-xs font-black uppercase tracking-widest text-slate-400">Loading system configs...</div>
+
+      <div *ngFor="let group of groupedConfigs() | keyvalue" class="bg-white rounded-3xl border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-lg font-black text-slate-900">{{group.key}}</h2>
+          <span class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">{{group.value.length}} configs</span>
+        </div>
+
+        <div class="space-y-5">
+          <div *ngFor="let config of group.value; let i = index" class="grid grid-cols-[1.2fr_1.2fr_1fr_auto] gap-4 items-center border border-slate-200 rounded-2xl p-4">
+            <div>
+              <div class="font-black text-slate-900">{{config.configKey}}</div>
+              <div class="text-xs text-slate-500 mt-1">{{config.description}}</div>
+            </div>
+
+            <div [formGroup]="getConfigGroup(configs().indexOf(config))" class="space-y-2">
+              <ng-container [ngSwitch]="getPresentation(config)">
+                <label *ngSwitchCase="'toggle'" class="flex items-center gap-3">
+                  <input type="checkbox" [checked]="config.configValue === 'true'" (change)="getConfigGroup(configs().indexOf(config)).patchValue({configValue: $any($event.target).checked ? 'true' : 'false'})" class="h-5 w-5 accent-slate-900">
+                  <span class="text-sm font-bold">{{getConfigGroup(configs().indexOf(config)).get('configValue')?.value === 'true' ? 'Enabled' : 'Disabled'}}</span>
+                </label>
+
+                <input *ngSwitchCase="'range'" type="range" min="0" max="100" [value]="config.configValue" (input)="getConfigGroup(configs().indexOf(config)).patchValue({configValue: $any($event.target).value})" class="w-full">
+
+                <select *ngSwitchCase="'select'" [value]="config.configValue" (change)="getConfigGroup(configs().indexOf(config)).patchValue({configValue: $any($event.target).value})" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white">
+                  <option [value]="config.configValue">{{config.configValue}}</option>
+                  <option value="BASIC">BASIC</option>
+                  <option value="ADVANCED">ADVANCED</option>
+                </select>
+
+                <input *ngSwitchCase="'number'" type="number" [value]="config.configValue" (input)="getConfigGroup(configs().indexOf(config)).patchValue({configValue: $any($event.target).value})" class="w-full px-4 py-3 rounded-xl border border-slate-200">
+
+                <input *ngSwitchDefault type="text" formControlName="configValue" class="w-full px-4 py-3 rounded-xl border border-slate-200">
+              </ng-container>
+            </div>
+
+            <div [formGroup]="getConfigGroup(configs().indexOf(config))">
+              <input type="text" formControlName="description" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white" placeholder="Description">
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button type="button" (click)="resetConfig(configs().indexOf(config))" class="px-4 py-3 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600">Reset</button>
+              <button type="button" (click)="saveConfig(config, configs().indexOf(config))" [disabled]="isSaving()[config.id]" class="px-4 py-3 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest disabled:opacity-50">
+                {{ isSaving()[config.id] ? 'Submitting...' : 'Request Change' }}
               </button>
             </div>
-          </label>
-
-          <label class="block space-y-3">
-            <div class="flex justify-between items-center">
-               <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">OCR Confidence Threshold</span>
-               <span class="text-xs font-black text-primary bg-indigo-50 px-2 py-1 rounded">85%</span>
-            </div>
-            <div class="pt-2">
-               <input type="range" min="0" max="100" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-primary">
-            </div>
-          </label>
-        </div>
-
-        <div class="space-y-4 border-l border-slate-100 pl-12">
-          <div class="flex items-center justify-between p-6 bg-slate-50 rounded-[24px] border border-transparent hover:border-indigo-100 transition-all">
-            <div class="flex flex-col">
-              <span class="text-sm font-black text-slate-800">Liveness Check</span>
-              <span class="text-[10px] font-bold text-slate-400">Face recognition & motion detection</span>
-            </div>
-            <div class="w-12 h-6 bg-indigo-600 rounded-full relative p-1 cursor-pointer">
-              <div class="w-4 h-4 bg-white rounded-full ml-auto shadow-md"></div>
-            </div>
-          </div>
-          <div class="flex items-center justify-between p-6 bg-slate-50 rounded-[24px] border border-transparent hover:border-indigo-100 transition-all">
-            <div class="flex flex-col">
-              <span class="text-sm font-black text-slate-800">Blacklist Check</span>
-              <span class="text-[10px] font-bold text-slate-400">Auto-reject against internal lists</span>
-            </div>
-            <div class="w-12 h-6 bg-green-500 rounded-full relative p-1 cursor-pointer">
-              <div class="w-4 h-4 bg-white rounded-full ml-auto shadow-md"></div>
-            </div>
           </div>
         </div>
       </div>
     </section>
-
-    <!-- Section: AML & Risk Scoring -->
-    <section class="bg-white rounded-[40px] border border-slate-100 p-10 space-y-10 shadow-sm">
-      <div class="space-y-1">
-        <h2 class="text-xl font-black text-slate-900 tracking-tight">AML Risk Scoring Engine</h2>
-        <p class="text-xs font-medium text-slate-400">Define weightage for automated risk assessment modules.</p>
-      </div>
-
-      <div class="space-y-8 max-w-2xl">
-        <div *ngFor="let rule of configs()" class="flex items-center gap-10 group">
-          <span class="text-xs font-black text-slate-600 w-48 uppercase tracking-widest">{{rule.configKey}}</span>
-          <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner relative">
-            <div class="h-full bg-primary shadow-[0_0_8px_rgba(36,56,156,0.4)] transition-all duration-1000" [style.width.%]="+rule.configValue || 0"></div>
-          </div>
-          <div class="relative">
-             <input [value]="displayValue(rule)" class="w-32 border-2 border-slate-100 rounded-xl py-2 px-3 text-sm font-black text-center text-slate-800 focus:border-primary outline-none transition-all">
-             <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-[8px] font-black text-slate-400 uppercase tracking-widest bg-white px-1">{{rule.configType}}</span>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
+  </main>
 </div>

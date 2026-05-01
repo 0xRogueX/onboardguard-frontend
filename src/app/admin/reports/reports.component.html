@@ -1,0 +1,69 @@
+<div class="flex-1 flex flex-col overflow-hidden">
+  <header class="h-20 bg-white border-b flex items-center justify-between px-10">
+    <div>
+      <h1 class="text-xl font-black text-slate-900 tracking-tight uppercase">Reporting</h1>
+      <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Operational overview from /admin/dashboard</p>
+    </div>
+    <button (click)="load()" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest">Refresh</button>
+  </header>
+
+  <main class="flex-1 overflow-y-auto p-10 space-y-8">
+    <div *ngIf="errorMessage()" class="p-4 rounded-2xl bg-rose-50 text-rose-700 border border-rose-200 text-sm font-bold">{{errorMessage()}}</div>
+    <div *ngIf="isLoading()" class="text-xs font-black uppercase tracking-widest text-slate-400">Loading report...</div>
+
+    <section class="grid grid-cols-4 gap-4">
+      <div class="bg-white border border-slate-200 rounded-2xl p-5" *ngFor="let card of [
+        {label: 'Onboarded', value: stats()?.candidateStats?.totalOnboarded || 0},
+        {label: 'Cleared', value: stats()?.candidateStats?.cleared || 0},
+        {label: 'Open Alerts', value: stats()?.alertStats?.openAlerts || 0},
+        {label: 'Pending Approvals', value: stats()?.pendingMakerCheckerRequests || 0}
+      ]">
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">{{card.label}}</div>
+        <div class="text-3xl font-black mt-2">{{card.value}}</div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-2 gap-8">
+      <div class="bg-white rounded-[28px] border border-slate-200 p-6">
+        <h2 class="text-lg font-black text-slate-900 mb-6">Candidate Funnel</h2>
+        <div class="space-y-4">
+          <div *ngFor="let item of candidateBars()" class="space-y-2">
+            <div class="flex justify-between text-xs font-bold text-slate-500 uppercase tracking-widest">
+              <span>{{item.label}}</span><span>{{item.value}}</span>
+            </div>
+            <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-slate-900" [style.width.%]="(item.value / maxValue(candidateBars())) * 100"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-[28px] border border-slate-200 p-6">
+        <h2 class="text-lg font-black text-slate-900 mb-6">Alert Distribution</h2>
+        <div class="space-y-4">
+          <div *ngFor="let item of alertBars()" class="space-y-2">
+            <div class="flex justify-between text-xs font-bold text-slate-500 uppercase tracking-widest">
+              <span>{{item.label}}</span><span>{{item.value}}</span>
+            </div>
+            <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-emerald-500" [style.width.%]="(item.value / maxValue(alertBars())) * 100"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-[28px] border border-slate-200 p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-black text-slate-900">Risk Categories</h2>
+        <span class="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">categoryHitFrequency</span>
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <div *ngFor="let item of (stats()?.categoryHitFrequency | keyvalue)" class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+          <div class="text-xs font-black uppercase tracking-widest text-slate-500">{{item.key}}</div>
+          <div class="text-2xl font-black text-slate-900 mt-2">{{item.value}}</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
