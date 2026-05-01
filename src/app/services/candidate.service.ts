@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, Subject, timeout } from 'rxjs';
+import { HttpClient, HttpEventType } from '@angular/common/http';
+import { Observable, Subject, timeout, filter, map } from 'rxjs';
 import { CandidateStatusDto, DocumentDto } from '../models';
 
 export interface ApiResponse<T> {
@@ -15,8 +15,8 @@ export interface ApiResponse<T> {
 })
 export class CandidateService {
   private readonly apiUrl = 'http://localhost:8080/api/v1/candidates/profile';
-  private readonly defaultRequestTimeoutMs = 15000;
-  private readonly uploadRequestTimeoutMs = 45000;
+  private readonly defaultRequestTimeoutMs = 30000;   // 30s for forms
+  private readonly uploadRequestTimeoutMs  = 120000;  // 2 min for Cloudinary upload
   private http = inject(HttpClient);
   private profileUpdatedSubject = new Subject<void>();
 
@@ -41,7 +41,7 @@ export class CandidateService {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('candidateDocumentType', documentType);
-    
+
     return this.http.post<ApiResponse<any>>(`${this.apiUrl}/documents`, formData)
       .pipe(timeout(this.uploadRequestTimeoutMs));
   }

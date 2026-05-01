@@ -1,46 +1,78 @@
-<div class="flex h-screen bg-slate-900 text-slate-300">
-  <!-- Officer Sidebar -->
-  <aside class="w-20 hover:w-64 group bg-slate-950 flex flex-col items-center py-6 transition-all duration-300 border-r border-slate-800 z-50 overflow-hidden shadow-2xl">
-    <div class="mb-10">
-      <img src="/onboardguard_logo_1777340930385.png" class="w-12 h-12 object-contain" alt="Logo">
+<div class="flex h-screen bg-slate-950 text-white">
+  <aside class="w-72 bg-slate-950 border-r border-white/10 flex flex-col p-6">
+    <!-- Logo + Module Title -->
+    <div class="flex items-center gap-3 mb-10">
+      <img src="/onboardguard_logo_1777340930385.png" class="w-10 h-10 object-contain" alt="Logo">
+      <div>
+        <div class="text-xl font-black tracking-tight">Officer Desk</div>
+        <div class="text-[10px] uppercase tracking-[0.25em] text-slate-400">{{ roleSummary() }}</div>
+      </div>
     </div>
-    <nav class="flex-1 w-full space-y-4 px-4">
-      <a routerLink="/officer/alerts" routerLinkActive="bg-indigo-600 text-white" class="flex items-center gap-4 p-3 rounded-2xl transition-all">
-        <span class="material-symbols-outlined">queue</span>
-        <span class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-black">Verification Queue</span>
-      </a>
-      <a routerLink="/officer/investigation" routerLinkActive="bg-indigo-600 text-white" class="hidden flex items-center gap-4 p-3 hover:bg-slate-800 rounded-2xl transition-all">
-        <span class="material-symbols-outlined">fact_check</span>
-        <span class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-black">Verification Details</span>
-      </a>
-      <a routerLink="/officer/case-review" routerLinkActive="bg-indigo-600 text-white" class="flex items-center gap-4 p-3 hover:bg-slate-800 rounded-2xl transition-all">
-        <span class="material-symbols-outlined">assignment</span>
-        <span class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-black">Case Review</span>
-      </a>
-      <a routerLink="/officer/escalated" routerLinkActive="bg-indigo-600 text-white" class="flex items-center gap-4 p-3 hover:bg-slate-800 rounded-2xl transition-all">
-        <span class="material-symbols-outlined text-red-400">gpp_maybe</span>
-        <span class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-black">Escalated</span>
-      </a>
-      <a href="#" class="flex items-center gap-4 p-3 hover:bg-slate-800 rounded-2xl transition-all">
-        <span class="material-symbols-outlined">history</span>
-        <span class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-black">Audit History</span>
-      </a>
+
+    <!-- Navigation -->
+    <nav class="flex-1 space-y-2">
+
+      <!-- ── L1 ONLY ── -->
+      <div *ngIf="isL1()">
+        <!-- Section Label -->
+        <p class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-600 px-3 mb-3 mt-2">Verification</p>
+
+        <a routerLink="/officer/alerts" routerLinkActive="bg-white/10 text-white"
+           class="flex items-center gap-3 p-3 rounded-2xl font-bold text-slate-300 hover:bg-white/5 transition-all">
+          <span class="material-symbols-outlined">queue</span>
+          Candidate Queue
+        </a>
+
+        <a routerLink="/officer/case-review" routerLinkActive="bg-white/10 text-white"
+           class="flex items-center gap-3 p-3 rounded-2xl font-bold text-slate-300 hover:bg-white/5 transition-all">
+          <span class="material-symbols-outlined">assignment</span>
+          Open Cases
+        </a>
+
+        <!-- Section Label -->
+        <p class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-600 px-3 mb-3 mt-6">Screening Alerts</p>
+
+        <a routerLink="/officer/alert-board" routerLinkActive="bg-white/10 text-white"
+           class="flex items-center gap-3 p-3 rounded-2xl font-bold text-slate-300 hover:bg-white/5 transition-all">
+          <span class="material-symbols-outlined">notifications_active</span>
+          Alert Board
+        </a>
+      </div>
+
+      <!-- ── L2 ONLY ── -->
+      <div *ngIf="isL2()">
+        <p class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-600 px-3 mb-3 mt-2">Checker Review</p>
+
+        <a routerLink="/officer/escalated" routerLinkActive="bg-white/10 text-white"
+           class="flex items-center gap-3 p-3 rounded-2xl font-bold text-slate-300 hover:bg-white/5 transition-all">
+          <span class="material-symbols-outlined text-red-400">gpp_maybe</span>
+          Escalated Cases
+        </a>
+      </div>
+
     </nav>
-    <div class="mt-auto px-4 w-full">
-       <div class="flex items-center gap-4 p-3 bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
-         <div class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
-             <span class="text-[10px] font-black uppercase">{{displayName().charAt(0)}}</span>
-          </div>
-          <div class="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-             <span class="text-[10px] font-black text-white">{{displayName()}}</span>
-             <span class="text-[8px] font-bold text-slate-500 tracking-widest uppercase">{{roleLabel()}}</span>
-          </div>
-       </div>
+
+    <!-- User Footer -->
+    <div class="pt-6 border-t border-white/10 space-y-3">
+      <div class="flex items-center gap-3 p-3 bg-white/5 rounded-2xl">
+        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xs font-black shrink-0">
+          {{ displayName().charAt(0) }}
+        </div>
+        <div class="flex flex-col min-w-0">
+          <span class="text-sm font-black truncate">{{ displayName() }}</span>
+          <span class="text-[10px] uppercase tracking-[0.2em] text-slate-400 truncate">{{ roleLabel() }}</span>
+        </div>
+      </div>
+      <button (click)="logout()"
+        class="w-full flex items-center gap-3 p-3 rounded-2xl font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all text-sm">
+        <span class="material-symbols-outlined">logout</span>
+        Sign Out
+      </button>
     </div>
   </aside>
 
-  <!-- Main View -->
-  <main class="flex-1 flex flex-col bg-slate-900 relative overflow-y-auto">
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col overflow-hidden bg-slate-100 text-slate-900">
     <router-outlet></router-outlet>
   </main>
 </div>

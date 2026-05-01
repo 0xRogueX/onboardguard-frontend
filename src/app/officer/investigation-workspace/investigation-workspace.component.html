@@ -1,153 +1,258 @@
-<div *ngIf="!isLoading() && candidate()" class="p-8 space-y-8 animate-in fade-in slide-in-from-right-4 duration-700">
-  
-  <!-- Header -->
-  <div class="flex items-center justify-between">
+<!-- Global Loading -->
+<div *ngIf="isLoading()" class="fixed inset-0 bg-slate-100 z-40 flex flex-col items-center justify-center">
+  <div class="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+  <p class="text-slate-500 font-black text-[10px] uppercase tracking-widest mt-6">Loading Application Details</p>
+</div>
+
+<!-- Error State -->
+<div *ngIf="!isLoading() && errorMessage() && !candidate()"
+  class="p-8 flex flex-col items-center justify-center h-full">
+  <span class="material-symbols-outlined text-red-300 text-6xl mb-4">error</span>
+  <p class="text-slate-700 font-bold">{{ errorMessage() }}</p>
+  <button routerLink="/officer/alerts"
+    class="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest">
+    Back to Queue
+  </button>
+</div>
+
+<!-- Main Workspace -->
+<div *ngIf="!isLoading() && candidate()" class="p-8 space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 overflow-y-auto h-full">
+
+  <!-- Success / Error Toasts -->
+  <div *ngIf="successMessage()" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl flex items-center gap-3">
+    <span class="material-symbols-outlined shrink-0">check_circle</span>
+    <p class="text-sm font-bold">{{ successMessage() }}</p>
+  </div>
+  <div *ngIf="errorMessage()" class="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl flex items-center gap-3">
+    <span class="material-symbols-outlined shrink-0">error</span>
+    <p class="text-sm font-bold">{{ errorMessage() }}</p>
+  </div>
+
+  <!-- Page Header -->
+  <div class="flex items-center justify-between flex-wrap gap-4">
     <div class="flex items-center gap-4">
-      <button routerLink="/officer/alerts" class="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-primary transition-all">
+      <button routerLink="/officer/alerts"
+        class="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm">
         <span class="material-symbols-outlined block">arrow_back</span>
       </button>
       <div>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Review: {{ candidate()?.personalInfo?.firstName }} {{ candidate()?.personalInfo?.lastName }}</h1>
-        <p class="text-slate-500 font-medium mt-1">Application ID: #CAND-{{ candidate()?.candidateId }} • Submitted {{ candidate()?.formSubmittedAt | date:'medium' }}</p>
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">
+          {{ candidate()?.personalInfo?.firstName }} {{ candidate()?.personalInfo?.lastName }}
+        </h1>
+        <p class="text-slate-500 font-medium mt-1 text-sm">
+          Candidate #{{ candidate()?.candidateId }} &nbsp;·&nbsp;
+          {{ candidate()?.email }} &nbsp;·&nbsp;
+          Submitted {{ candidate()?.formSubmittedAt | date:'mediumDate' }}
+        </p>
       </div>
     </div>
-    <div class="px-6 py-3 bg-indigo-50 border border-indigo-100 rounded-2xl">
-      <span class="text-xs font-black text-indigo-600 uppercase tracking-widest">{{ candidate()?.status }}</span>
+    <!-- Stats Bar -->
+    <div class="flex items-center gap-3">
+      <div class="px-4 py-2 bg-amber-50 border border-amber-100 rounded-2xl text-[10px] font-black text-amber-600 uppercase tracking-widest">
+        {{ pendingDocsCount() }} Pending
+      </div>
+      <div class="px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-2xl text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+        {{ approvedDocsCount() }} Approved
+      </div>
+      <div class="px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-2xl text-[10px] font-black text-indigo-600 uppercase tracking-widest">
+        {{ candidate()?.status | titlecase }}
+      </div>
     </div>
   </div>
 
+  <!-- Main Grid -->
   <div class="grid grid-cols-12 gap-8">
-    <!-- Left: Profile Details -->
-    <div class="col-span-12 lg:col-span-4 space-y-8">
-      <!-- Personal Info -->
-      <div class="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm space-y-6">
-        <h2 class="text-lg font-black text-slate-900 border-b border-slate-50 pb-4">Personal Details</h2>
-        <div class="grid grid-cols-1 gap-6">
-          <div class="space-y-1">
-            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Full Name</span>
-            <p class="text-sm font-bold text-slate-700">{{ candidate()?.personalInfo?.firstName }} {{ candidate()?.personalInfo?.lastName }}</p>
+
+    <!-- Left Column: Profile Info -->
+    <div class="col-span-12 lg:col-span-4 space-y-6">
+
+      <!-- Personal Details -->
+      <div class="bg-white rounded-[28px] p-8 border border-slate-100 shadow-sm space-y-5">
+        <h2 class="text-base font-black text-slate-900 border-b border-slate-50 pb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-indigo-500">person</span> Personal Details
+        </h2>
+        <div class="space-y-4 text-sm">
+          <div class="flex justify-between">
+            <span class="text-slate-400 font-bold">Full Name</span>
+            <span class="font-black text-slate-800">{{ candidate()?.personalInfo?.firstName }} {{ candidate()?.personalInfo?.lastName }}</span>
           </div>
-          <div class="space-y-1">
-            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">DOB & Gender</span>
-            <p class="text-sm font-bold text-slate-700">{{ candidate()?.personalInfo?.dateOfBirth }} • {{ candidate()?.personalInfo?.gender }}</p>
+          <div class="flex justify-between">
+            <span class="text-slate-400 font-bold">Date of Birth</span>
+            <span class="font-black text-slate-800">{{ candidate()?.personalInfo?.dateOfBirth }}</span>
           </div>
-          <div class="space-y-1">
-            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Government IDs</span>
-            <div class="space-y-2 mt-2">
-              <div class="flex items-center gap-2 p-3 bg-slate-50 rounded-2xl">
-                <span class="material-symbols-outlined text-slate-400 text-sm">badge</span>
-                <span class="text-xs font-bold text-slate-600">PAN: {{ candidate()?.personalInfo?.panNumber }}</span>
+          <div class="flex justify-between">
+            <span class="text-slate-400 font-bold">Gender</span>
+            <span class="font-black text-slate-800">{{ candidate()?.personalInfo?.gender }}</span>
+          </div>
+          <div class="border-t border-slate-50 pt-4 space-y-3">
+            <div *ngIf="candidate()?.personalInfo?.panNumber" class="flex items-center gap-2 p-3 bg-slate-50 rounded-2xl">
+              <span class="material-symbols-outlined text-slate-400 text-sm">badge</span>
+              <div>
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">PAN</p>
+                <p class="text-xs font-black text-slate-700">{{ candidate()?.personalInfo?.panNumber }}</p>
               </div>
-              <div class="flex items-center gap-2 p-3 bg-slate-50 rounded-2xl">
-                <span class="material-symbols-outlined text-slate-400 text-sm">fingerprint</span>
-                <span class="text-xs font-bold text-slate-600">Aadhaar: {{ candidate()?.personalInfo?.adhaarNumber }}</span>
+            </div>
+            <div *ngIf="candidate()?.personalInfo?.adhaarNumber" class="flex items-center gap-2 p-3 bg-slate-50 rounded-2xl">
+              <span class="material-symbols-outlined text-slate-400 text-sm">fingerprint</span>
+              <div>
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Aadhaar</p>
+                <p class="text-xs font-black text-slate-700">{{ candidate()?.personalInfo?.adhaarNumber }}</p>
+              </div>
+            </div>
+            <div *ngIf="candidate()?.personalInfo?.passportNumber" class="flex items-center gap-2 p-3 bg-slate-50 rounded-2xl">
+              <span class="material-symbols-outlined text-slate-400 text-sm">flight</span>
+              <div>
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Passport</p>
+                <p class="text-xs font-black text-slate-700">{{ candidate()?.personalInfo?.passportNumber }}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Address & Professional -->
-      <div class="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm space-y-6">
-        <h2 class="text-lg font-black text-slate-900 border-b border-slate-50 pb-4">Background</h2>
-        <div class="space-y-6">
-          <div class="space-y-1">
-            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Address</span>
-            <p class="text-sm font-bold text-slate-700 leading-relaxed">
-              {{ candidate()?.addressInfo?.addressLine1 }}, {{ candidate()?.addressInfo?.city }}<br>
-              {{ candidate()?.addressInfo?.state }}, {{ candidate()?.addressInfo?.pincode }}
-            </p>
+      <!-- Address -->
+      <div class="bg-white rounded-[28px] p-8 border border-slate-100 shadow-sm space-y-5">
+        <h2 class="text-base font-black text-slate-900 border-b border-slate-50 pb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-indigo-500">location_on</span> Address
+        </h2>
+        <p class="text-sm font-bold text-slate-700 leading-relaxed">
+          {{ candidate()?.addressInfo?.addressLine1 }},<br>
+          {{ candidate()?.addressInfo?.city }}, {{ candidate()?.addressInfo?.state }} – {{ candidate()?.addressInfo?.pincode }}<br>
+          <span class="text-slate-400">{{ candidate()?.addressInfo?.country }}</span>
+        </p>
+      </div>
+
+      <!-- Professional -->
+      <div class="bg-white rounded-[28px] p-8 border border-slate-100 shadow-sm space-y-5">
+        <h2 class="text-base font-black text-slate-900 border-b border-slate-50 pb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-indigo-500">work</span> Professional Background
+        </h2>
+        <div class="space-y-4 text-sm">
+          <div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Role</p>
+            <p class="font-black text-slate-800 mt-1">{{ candidate()?.professionalInfo?.currentDesignation || '—' }}</p>
+            <p class="text-slate-400 font-medium text-xs mt-0.5">@ {{ candidate()?.professionalInfo?.currentOrganization || 'N/A' }}</p>
           </div>
-          <div class="space-y-1">
-            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Current Role</span>
-            <p class="text-sm font-bold text-slate-700">{{ candidate()?.professionalInfo?.currentDesignation }}</p>
-            <p class="text-xs font-medium text-slate-400">@ {{ candidate()?.professionalInfo?.currentOrganization }}</p>
+          <div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Experience</p>
+            <p class="font-black text-slate-800 mt-1">{{ candidate()?.professionalInfo?.totalExperienceYears ?? '—' }} years</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Highest Qualification</p>
+            <p class="font-black text-slate-800 mt-1">{{ candidate()?.professionalInfo?.highestQualification || '—' }}</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Right: Documents Review -->
-    <div class="col-span-12 lg:col-span-8 space-y-8">
-      <div class="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm">
-        <h2 class="text-lg font-black text-slate-900 border-b border-slate-50 pb-4 mb-8">Document Verification</h2>
-        
+    <!-- Right Column: Documents -->
+    <div class="col-span-12 lg:col-span-8">
+      <div class="bg-white rounded-[28px] p-8 border border-slate-100 shadow-sm">
+        <h2 class="text-base font-black text-slate-900 border-b border-slate-50 pb-4 mb-8 flex items-center gap-2">
+          <span class="material-symbols-outlined text-indigo-500">folder_open</span>
+          Document Verification
+          <span class="ml-auto text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            {{ candidate()?.documents?.length }} document(s)
+          </span>
+        </h2>
+
+        <div *ngIf="!candidate()?.documents?.length" class="text-center py-12 text-slate-400">
+          <span class="material-symbols-outlined text-5xl block mb-3">folder_off</span>
+          <p class="font-bold">No documents uploaded yet.</p>
+        </div>
+
         <div class="space-y-6">
-          <div *ngFor="let doc of candidate()?.documents" class="group bg-slate-50 rounded-[32px] p-6 border-2 border-transparent hover:border-primary/10 hover:bg-white hover:shadow-xl hover:shadow-indigo-900/5 transition-all duration-500">
+          <div *ngFor="let doc of candidate()?.documents"
+            class="group bg-slate-50 rounded-[20px] p-6 border-2 border-transparent hover:border-indigo-100 hover:bg-white hover:shadow-lg transition-all duration-300">
+
             <div class="flex flex-col md:flex-row gap-6">
-              <!-- Doc Preview/Icon -->
-              <div class="w-full md:w-32 h-32 bg-white rounded-2xl border border-slate-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+              <!-- Doc Icon / Preview -->
+              <div class="relative w-28 h-28 bg-white rounded-2xl border border-slate-100 flex flex-col items-center justify-center shrink-0 overflow-hidden group/preview">
                 <span class="material-symbols-outlined text-slate-200 text-5xl">description</span>
-                <a [href]="doc.fileUrl" target="_blank" class="absolute inset-0 bg-primary/80 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
-                  <span class="material-symbols-outlined">visibility</span>
+                <a [href]="doc.fileUrl" target="_blank"
+                  class="absolute inset-0 bg-indigo-600/90 opacity-0 group-hover/preview:opacity-100 flex items-center justify-center text-white transition-opacity rounded-2xl">
+                  <span class="material-symbols-outlined">open_in_new</span>
                 </a>
               </div>
 
-              <!-- Doc Info -->
-              <div class="flex-1 space-y-4">
-                <div class="flex items-start justify-between">
-                  <div>
-                    <h3 class="text-base font-black text-slate-900">{{ doc.candidateDocumentType | titlecase }}</h3>
-                    <p class="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">{{ doc.originalFilename }}</p>
+              <!-- Doc Details + Actions -->
+              <div class="flex-1 space-y-4 min-w-0">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="min-w-0">
+                    <h3 class="text-base font-black text-slate-900">{{ formatDocType(doc.candidateDocumentType) }}</h3>
+                    <p class="text-xs font-bold text-slate-400 mt-1 truncate">{{ doc.originalFilename }}</p>
+                    <p class="text-xs text-slate-300 mt-0.5">{{ (doc.fileSizeBytes / 1024).toFixed(1) }} KB &nbsp;·&nbsp; Uploaded {{ doc.uploadedAt | date:'MMM d, y' }}</p>
                   </div>
-                  <div [ngClass]="getDocStatusClass(doc.status)" class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border">
+                  <div class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border shrink-0"
+                    [ngClass]="getDocStatusClass(doc.status)">
                     {{ doc.status }}
                   </div>
                 </div>
 
-                <!-- Actions -->
-                <div *ngIf="doc.status === 'PENDING'" class="flex items-center gap-3">
-                  <button (click)="approveDoc(doc.id)" [disabled]="isProcessing()" class="flex-1 py-3 bg-green-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-lg shadow-green-900/10">
-                    Approve
+                <!-- PENDING: Verify / Reject actions -->
+                <div *ngIf="doc.status === 'PENDING' && isL1()" class="flex items-center gap-3 pt-2">
+                  <button (click)="approveDoc(doc.id)" [disabled]="isProcessing()"
+                    class="flex-1 py-3 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-900/10 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">verified</span>
+                    Verify
                   </button>
-                  <button (click)="openRejectModal(doc.id)" [disabled]="isProcessing()" class="flex-1 py-3 bg-white border border-red-200 text-red-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all">
+                  <button (click)="openRejectModal(doc.id)" [disabled]="isProcessing()"
+                    class="flex-1 py-3 bg-white border-2 border-red-200 text-red-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">close</span>
                     Reject
                   </button>
                 </div>
 
+                <!-- REJECTED: Show reason -->
                 <div *ngIf="doc.status === 'REJECTED'" class="p-3 bg-red-50 rounded-2xl border border-red-100">
-                  <p class="text-[10px] font-black text-red-400 uppercase tracking-widest">Reason</p>
+                  <p class="text-[10px] font-black text-red-400 uppercase tracking-widest">Rejection Reason</p>
                   <p class="text-xs font-bold text-red-600 mt-1">{{ doc.rejectionReason }}</p>
+                </div>
+
+                <!-- APPROVED: Checkmark -->
+                <div *ngIf="doc.status === 'APPROVED'" class="p-3 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-emerald-500 text-sm">check_circle</span>
+                  <p class="text-xs font-black text-emerald-600">Document verified and approved</p>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Rejection Modal -->
-  <div *ngIf="showRejectModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-    <div class="bg-white rounded-[40px] max-w-md w-full p-10 space-y-8 shadow-2xl animate-in zoom-in-95 duration-300">
-      <div class="text-center space-y-2">
-        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span class="material-symbols-outlined text-red-500 text-3xl">report</span>
-        </div>
-        <h2 class="text-2xl font-black text-slate-900 tracking-tight">Reject Document</h2>
-        <p class="text-slate-500 text-sm">Please provide a reason. The candidate will be asked to re-upload.</p>
-      </div>
-
-      <div class="space-y-4">
-        <textarea [(ngModel)]="rejectionReason" placeholder="e.g. Document is blurry, incorrect document type uploaded..."
-          class="w-full h-32 p-6 bg-slate-50 border-2 border-transparent rounded-[32px] text-sm focus:bg-white focus:border-red-500 outline-none transition-all font-medium resize-none"></textarea>
-      </div>
-
-      <div class="flex items-center gap-4">
-        <button (click)="showRejectModal.set(false)" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">
-          Cancel
-        </button>
-        <button (click)="confirmReject()" [disabled]="!rejectionReason().trim() || isProcessing()" class="flex-1 py-4 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-900/20">
-          Confirm Rejection
-        </button>
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<!-- Global Loading -->
-<div *ngIf="isLoading()" class="fixed inset-0 bg-slate-50 z-40 flex flex-col items-center justify-center">
-  <div class="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-  <p class="text-slate-400 font-black text-[10px] uppercase tracking-widest mt-6">Loading Verification Files</p>
+<!-- Rejection Modal -->
+<div *ngIf="showRejectModal()"
+  class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+  (click)="closeModal()">
+  <div class="bg-white rounded-[32px] max-w-md w-full p-10 space-y-8 shadow-2xl animate-in zoom-in-95 duration-300"
+    (click)="$event.stopPropagation()">
+    <div class="text-center space-y-2">
+      <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="material-symbols-outlined text-red-500 text-3xl">report</span>
+      </div>
+      <h2 class="text-2xl font-black text-slate-900">Reject Document</h2>
+      <p class="text-slate-500 text-sm">Provide a clear reason. The candidate will be notified and asked to re-upload.</p>
+    </div>
+
+    <textarea [(ngModel)]="rejectionReason"
+      placeholder="e.g. Document is blurry, incorrect type uploaded, text not legible..."
+      class="w-full h-32 p-5 bg-slate-50 border-2 border-transparent rounded-[20px] text-sm focus:bg-white focus:border-red-400 outline-none transition-all font-medium resize-none"></textarea>
+
+    <div class="flex items-center gap-4">
+      <button (click)="closeModal()"
+        class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">
+        Cancel
+      </button>
+      <button (click)="confirmReject()"
+        [disabled]="!rejectionReason().trim() || isProcessing()"
+        class="flex-1 py-4 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-900/20 disabled:opacity-50 flex items-center justify-center gap-2">
+        <span *ngIf="isProcessing()" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+        {{ isProcessing() ? 'Processing...' : 'Confirm Rejection' }}
+      </button>
+    </div>
+  </div>
 </div>

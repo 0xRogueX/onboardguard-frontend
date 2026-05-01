@@ -58,6 +58,50 @@ export interface DocumentVerificationDashboard {
   }>;
 }
 
+export interface AlertDetail {
+  id: number;
+  candidateId: number;
+  screeningResultId?: number;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | string;
+  status: 'OPEN' | 'ACKNOWLEDGED' | 'DISMISSED' | 'CONVERTED' | string;
+  matchedCategories: string[];
+  slaDeadline?: string;
+  isSlaBreached?: boolean;
+  acknowledgedBy?: number;
+  acknowledgedAt?: string;
+  createdAt: string;
+}
+
+export interface CaseDetail {
+  id: number;
+  alertId?: number;
+  candidateId: number;
+  assignedOfficerId?: number;
+  assignedBy?: number;
+  assignedAt?: string;
+  slaDueDate?: string;
+  isSlaBreached?: boolean;
+  status: 'OPEN' | 'IN_REVIEW' | 'ESCALATED' | 'CLEARED' | 'REJECTED' | string;
+  outcome?: 'CLEARED' | 'REJECTED' | string;
+  outcomeReason?: string;
+  resolvedBy?: number;
+  resolvedAt?: string;
+  escalatedBy?: number;
+  escalatedTo?: number;
+  escalatedAt?: string;
+  escalationReason?: string;
+  notes?: CaseNote[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CaseNote {
+  id?: number;
+  content: string;
+  authorId?: number;
+  createdAt?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -65,59 +109,124 @@ export class OfficerService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:8080/api/v1/officer';
 
-  // L1 Verification (Legacy methods added back to fix compilation)
+  // ─── DOCUMENT VERIFICATION (L1) ───────────────────────────────────────────
+
+  /** Get all candidates pending document review */
   getPendingCandidates(): Observable<ApiResponse<CandidateQueueItem[]>> {
     return this.http.get<ApiResponse<CandidateQueueItem[]>>(`${this.apiUrl}/documents/candidates/pending`);
   }
 
+  /** Claim a specific candidate for review (locks it) */
   claimCandidate(candidateId: number): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.apiUrl}/documents/candidates/${candidateId}/claim`, {});
   }
 
+  /** Auto-assign next waiting candidate (FIFO) */
+  claimNextCandidate(): Observable<ApiResponse<DocumentVerificationDashboard>> {
+    return this.http.post<ApiResponse<DocumentVerificationDashboard>>(`${this.apiUrl}/documents/candidates/assign-next`, {});
+  }
+
+  /** Get full candidate verification dashboard */
   getCandidateDetails(candidateId: number): Observable<ApiResponse<DocumentVerificationDashboard>> {
     return this.http.get<ApiResponse<DocumentVerificationDashboard>>(`${this.apiUrl}/documents/candidates/${candidateId}`);
   }
 
-
-  // L1 Verification
-  getPendingDocuments(): Observable<ApiResponse<DocumentDto[]>> {
-    return this.http.get<ApiResponse<DocumentDto[]>>(`${this.apiUrl}/documents/candidates/pending`);
-  }
-
-  assignNextDocument(): Observable<ApiResponse<DocumentDto>> {
-    return this.http.post<ApiResponse<DocumentDto>>(`${this.apiUrl}/documents/assign-next`, {});
-  }
-
-  approveDocument(docId: string | number): Observable<ApiResponse<void>> {
+  /** Approve a document */
+  approveDocument(docId: number): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.apiUrl}/documents/${docId}/approve`, {});
   }
 
-  rejectDocument(docId: string | number, reason: string): Observable<ApiResponse<void>> {
+  /** Reject a document with a reason */
+  rejectDocument(docId: number, reason: string): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.apiUrl}/documents/${docId}/reject`, { reason });
   }
 
-  // Alerts
-  getAlerts(): Observable<ApiResponse<AlertDto[]>> {
-    return this.http.get<ApiResponse<AlertDto[]>>(`${this.apiUrl}/alerts`);
+  // ─── ALERTS (L1) ───────────────────────────────────────────────────────────
+
+  /** Get all OPEN alerts (L1 dashboard) */
+  getAlerts(): Observable<ApiResponse<AlertDetail[]>> {
+    return this.http.get<ApiResponse<AlertDetail[]>>(`${this.apiUrl}/alerts`);
   }
 
-  // Cases (L1/L2)
-  getAvailableCases(): Observable<ApiResponse<CaseDto[]>> {
-    return this.http.get<ApiResponse<CaseDto[]>>(`${this.apiUrl}/cases/available`);
+  /** Claim / acknowledge a specific alert */
+  acknowledgeAlert(alertId: number): Observable<ApiResponse<AlertDetail>> {
+    return this.http.post<ApiResponse<AlertDetail>>(`${this.apiUrl}/alerts/${alertId}/acknowledge`, {});
   }
 
-  getEscalatedCases(): Observable<ApiResponse<CaseDto[]>> {
-    return this.http.get<ApiResponse<CaseDto[]>>(`${this.apiUrl}/cases/escalated`);
+  /** Auto-assign next OPEN alert (FIFO) */
+  claimNextAlert(): Observable<ApiResponse<AlertDetail>> {
+    return this.http.post<ApiResponse<AlertDetail>>(`${this.apiUrl}/alerts/assign-next`, {});
   }
 
-  resolveCase(caseId: string | number, resolution: 'CLEARED' | 'REJECTED'): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/cases/${caseId}/resolve`, {
-      outcome: resolution,
-      reason: resolution === 'CLEARED' ? 'Cleared from officer review' : 'Rejected from officer review'
+  /** Dismiss an alert as false-positive */
+  dismissAlert(alertId: number, reason: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/alerts/${alertId}/dismiss`, null, {
+      params: { reason }
     });
   }
 
-  addCaseNote(caseId: string | number, note: string): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/cases/${caseId}/notes`, { content: note });
+  /** Convert a claimed alert into a full case */
+  convertAlertToCase(alertId: number): Observable<ApiResponse<number>> {
+    return this.http.post<ApiResponse<number>>(`${this.apiUrl}/alerts/${alertId}/convert`, {});
+  }
+
+  // ─── CASES – L1 (OPEN QUEUE) ───────────────────────────────────────────────
+
+  /** Get all OPEN cases available for L1 */
+  getAvailableCases(): Observable<ApiResponse<CaseDetail[]>> {
+    return this.http.get<ApiResponse<CaseDetail[]>>(`${this.apiUrl}/cases/available`);
+  }
+
+  /** Manually claim a specific OPEN case */
+  claimOpenCase(caseId: number): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/cases/available/${caseId}/claim`, {});
+  }
+
+  /** Auto-assign next OPEN case (FIFO) */
+  claimNextOpenCase(): Observable<ApiResponse<CaseDetail>> {
+    return this.http.post<ApiResponse<CaseDetail>>(`${this.apiUrl}/cases/available/assign-next`, {});
+  }
+
+  /** Escalate an IN_REVIEW case to L2 */
+  escalateCase(caseId: number, escalatedTo: number | null, escalationReason: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/cases/${caseId}/escalate`, {
+      escalatedTo,
+      escalationReason
+    });
+  }
+
+  // ─── CASES – L2 (ESCALATED QUEUE) ─────────────────────────────────────────
+
+  /** Get all ESCALATED cases for L2 */
+  getEscalatedCases(): Observable<ApiResponse<CaseDetail[]>> {
+    return this.http.get<ApiResponse<CaseDetail[]>>(`${this.apiUrl}/cases/escalated`);
+  }
+
+  /** Manually claim a specific ESCALATED case */
+  claimEscalatedCase(caseId: number): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/cases/escalated/${caseId}/claim`, {});
+  }
+
+  /** Auto-assign next ESCALATED case (FIFO) */
+  claimNextEscalatedCase(): Observable<ApiResponse<CaseDetail>> {
+    return this.http.post<ApiResponse<CaseDetail>>(`${this.apiUrl}/cases/escalated/assign-next`, {});
+  }
+
+  /** Resolve a case (CLEARED or REJECTED) – L2 final decision */
+  resolveCase(caseId: number, outcome: 'CLEARED' | 'REJECTED', outcomeReason: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/cases/${caseId}/resolve`, {
+      outcome,
+      outcomeReason
+    });
+  }
+
+  /** Get full details of a specific case */
+  getCaseDetails(caseId: number): Observable<ApiResponse<CaseDetail>> {
+    return this.http.get<ApiResponse<CaseDetail>>(`${this.apiUrl}/cases/${caseId}`);
+  }
+
+  /** Add an investigation note to a case */
+  addCaseNote(caseId: number, content: string): Observable<ApiResponse<CaseNote>> {
+    return this.http.post<ApiResponse<CaseNote>>(`${this.apiUrl}/cases/${caseId}/notes`, { content });
   }
 }

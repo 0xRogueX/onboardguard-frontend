@@ -51,9 +51,15 @@ export const routes: Routes = [
     data: { roles: ['L1_OFFICER', 'L2_OFFICER'] },
     children: [
       { path: '', redirectTo: 'alerts', pathMatch: 'full' },
+      // L1 — Candidate verification queue (main landing)
       { path: 'alerts', loadComponent: () => import('./officer/alert-dashboard/alert-dashboard.component').then(c => c.AlertDashboardComponent) },
+      // L1 — Document verification workspace (after claiming a candidate)
       { path: 'investigation/:id', loadComponent: () => import('./officer/investigation-workspace/investigation-workspace.component').then(c => c.InvestigationWorkspaceComponent) },
+      // L1 — Open screening cases (claim + escalate to L2)
       { path: 'case-review', loadComponent: () => import('./officer/case-review/case-review.component').then(c => c.CaseReviewComponent) },
+      // L1 — Screening alert board (claim alerts, convert to case, dismiss)
+      { path: 'alert-board', loadComponent: () => import('./officer/alert-board/alert-board.component').then(c => c.AlertBoardComponent) },
+      // L2 — Escalated cases (final approve/reject decision)
       { path: 'escalated', loadComponent: () => import('./officer/escalated-cases/escalated-cases.component').then(c => c.EscalatedCasesComponent) }
     ]
   }

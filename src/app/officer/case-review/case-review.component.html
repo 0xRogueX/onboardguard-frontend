@@ -1,47 +1,177 @@
-<div class="p-8 bg-slate-50 min-h-screen">
-  <div class="flex justify-between items-center mb-8">
-    <h1 class="text-3xl font-bold text-slate-800">Case Review Workspace</h1>
-    <button (click)="loadCases()" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm flex items-center gap-2">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-      Refresh Queue
-    </button>
+<div class="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto h-full">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between flex-wrap gap-4">
+    <div>
+      <h1 class="text-3xl font-black text-slate-900 tracking-tight">Open Cases</h1>
+      <p class="text-slate-500 font-medium mt-1 text-sm">Claim a case to investigate and escalate to L2 Checker for final approval</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button (click)="loadCases()" [disabled]="isLoading()"
+        class="p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:text-indigo-600 hover:border-indigo-200 transition-all active:scale-95 shadow-sm">
+        <span class="material-symbols-outlined block" [class.animate-spin]="isLoading()">refresh</span>
+      </button>
+      <div class="px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-2xl">
+        <span class="text-xs font-black text-indigo-600 uppercase tracking-widest">{{ cases().length }} Cases</span>
+      </div>
+    </div>
   </div>
 
-  <div *ngIf="isLoading()" class="flex justify-center p-12">
-    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+  <!-- Alerts -->
+  <div *ngIf="successMessage()" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl flex items-center gap-3">
+    <span class="material-symbols-outlined shrink-0">check_circle</span>
+    <p class="text-sm font-bold">{{ successMessage() }}</p>
+  </div>
+  <div *ngIf="errorMessage()" class="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl flex items-center gap-3">
+    <span class="material-symbols-outlined shrink-0">error</span>
+    <p class="text-sm font-bold">{{ errorMessage() }}</p>
   </div>
 
-  <div *ngIf="!isLoading() && cases().length === 0" class="text-center py-16 bg-white rounded-xl shadow-sm border border-slate-100">
-    <p class="text-slate-500 font-medium">No pending cases available at the moment.</p>
+  <!-- Loading -->
+  <div *ngIf="isLoading()" class="grid grid-cols-1 gap-4">
+    <div *ngFor="let i of [1,2,3]" class="h-40 bg-slate-100 rounded-[28px] animate-pulse"></div>
   </div>
 
-  <div *ngIf="!isLoading() && cases().length > 0" class="grid gap-6">
-    <div *ngFor="let c of cases()" class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all hover:shadow-md">
-      
-      <div>
-        <div class="flex items-center gap-3 mb-1">
-          <h3 class="text-lg font-semibold text-slate-800">Candidate #{{ c.candidateId }}</h3>
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                [ngClass]="{
-                  'bg-red-100 text-red-700': getPriority(c) === 'HIGH',
-                  'bg-yellow-100 text-yellow-700': getPriority(c) === 'MEDIUM',
-                  'bg-green-100 text-green-700': getPriority(c) === 'LOW'
-                }">
-            {{ getPriority(c) }} Priority
-          </span>
+  <!-- Empty -->
+  <div *ngIf="!isLoading() && cases().length === 0 && !errorMessage()"
+    class="flex flex-col items-center justify-center py-24 bg-white rounded-[40px] border-2 border-dashed border-slate-200">
+    <span class="material-symbols-outlined text-indigo-200 text-6xl mb-4">assignment</span>
+    <h3 class="text-xl font-black text-slate-900">No open cases</h3>
+    <p class="text-slate-500 text-sm mt-1">Open screening alerts will appear here as cases.</p>
+  </div>
+
+  <!-- Case Cards -->
+  <div *ngIf="!isLoading() && cases().length > 0" class="space-y-4">
+    <div *ngFor="let c of cases()"
+      class="bg-white rounded-[28px] p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+
+      <!-- SLA Breach Strip -->
+      <div *ngIf="c.isSlaBreached"
+        class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-400 shadow-[0_0_10px_rgba(239,68,68,0.4)]"></div>
+
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <!-- Case Identity -->
+        <div class="flex items-center gap-5">
+          <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center font-black text-lg text-indigo-600 shrink-0">
+            C{{ c.candidateId }}
+          </div>
+          <div>
+            <div class="flex items-center gap-3 mb-1">
+              <h3 class="text-lg font-black text-slate-900">Case #{{ c.id }}</h3>
+              <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border"
+                [ngClass]="getPriorityClass(c)">
+                {{ getPriorityLabel(c) }}
+              </span>
+            </div>
+            <p class="text-sm text-slate-500 font-medium">
+              Candidate #{{ c.candidateId }}
+              <span *ngIf="c.alertId"> &nbsp;·&nbsp; Alert #{{ c.alertId }}</span>
+              &nbsp;·&nbsp; Created {{ c.createdAt | date:'mediumDate' }}
+            </p>
+            <p *ngIf="c.slaDueDate" class="text-xs font-bold mt-1"
+              [ngClass]="c.isSlaBreached ? 'text-red-500' : 'text-slate-400'">
+              SLA Due: {{ c.slaDueDate | date:'MMM d, h:mm a' }}
+              <span *ngIf="c.isSlaBreached" class="ml-2 text-red-500">⚠ BREACHED</span>
+            </p>
+          </div>
         </div>
-        <p class="text-sm text-slate-500">Case ID: <span class="font-mono text-slate-600">{{ c.id }}</span> • Created: {{ c.createdAt | date:'mediumDate' }}</p>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-3 shrink-0">
+          <!-- Add Note (always) -->
+          <button (click)="openNoteModal(c.id)"
+            class="p-3 bg-slate-100 rounded-2xl text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all" title="Add Note">
+            <span class="material-symbols-outlined block text-sm">note_add</span>
+          </button>
+
+          <!-- Claim (OPEN) -->
+          <button *ngIf="canClaim(c)"
+            [disabled]="isClaiming() === c.id"
+            (click)="claimCase(c.id)"
+            class="px-6 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-900/20 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2">
+            <span *ngIf="isClaiming() === c.id" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            {{ isClaiming() === c.id ? 'Claiming...' : 'Claim Case' }}
+          </button>
+
+          <!-- Escalate (IN_REVIEW) -->
+          <button *ngIf="canEscalate(c)"
+            (click)="openEscalateModal(c.id)"
+            class="px-6 py-3 bg-amber-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-900/20 hover:bg-amber-600 transition-all active:scale-95 flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">escalator_warning</span>
+            Escalate to L2
+          </button>
+        </div>
       </div>
 
-      <div class="flex items-center gap-3 w-full md:w-auto">
-        <button (click)="resolveCase(c.id, 'CLEARED')" class="flex-1 md:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-          Clear Case
-        </button>
-        <button (click)="resolveCase(c.id, 'REJECTED')" class="flex-1 md:flex-none px-4 py-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg transition-colors shadow-sm">
-          Reject
-        </button>
+      <!-- Notes Preview -->
+      <div *ngIf="c.notes && c.notes.length > 0" class="mt-4 pt-4 border-t border-slate-50">
+        <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Latest Note</p>
+        <p class="text-xs font-medium text-slate-500 italic">"{{ c.notes[c.notes.length - 1].content }}"</p>
       </div>
-      
+    </div>
+  </div>
+</div>
+
+<!-- Escalate Modal -->
+<div *ngIf="showEscalateModal()"
+  class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+  (click)="showEscalateModal.set(false)">
+  <div class="bg-white rounded-[32px] max-w-md w-full p-10 space-y-8 shadow-2xl animate-in zoom-in-95 duration-300"
+    (click)="$event.stopPropagation()">
+    <div class="text-center space-y-2">
+      <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="material-symbols-outlined text-amber-500 text-3xl">escalator_warning</span>
+      </div>
+      <h2 class="text-2xl font-black text-slate-900">Escalate to L2 Checker</h2>
+      <p class="text-slate-500 text-sm">Provide a detailed reason for escalating this case. This will be reviewed by an L2 officer.</p>
+    </div>
+    <textarea [(ngModel)]="escalationReason"
+      placeholder="e.g. Candidate flagged in watchlist, requires additional due diligence..."
+      class="w-full h-32 p-5 bg-slate-50 border-2 border-transparent rounded-[20px] text-sm focus:bg-white focus:border-amber-400 outline-none transition-all font-medium resize-none"></textarea>
+    <p *ngIf="escalationReason().trim().length > 0 && escalationReason().trim().length < 10"
+      class="text-xs text-red-500 font-bold -mt-4">Reason must be at least 10 characters.</p>
+    <div class="flex items-center gap-4">
+      <button (click)="showEscalateModal.set(false)"
+        class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">
+        Cancel
+      </button>
+      <button (click)="confirmEscalate()"
+        [disabled]="escalationReason().trim().length < 10 || isProcessing()"
+        class="flex-1 py-4 bg-amber-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2">
+        <span *ngIf="isProcessing()" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+        {{ isProcessing() ? 'Escalating...' : 'Escalate Case' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Note Modal -->
+<div *ngIf="showNoteModal()"
+  class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+  (click)="showNoteModal.set(false)">
+  <div class="bg-white rounded-[32px] max-w-md w-full p-10 space-y-8 shadow-2xl animate-in zoom-in-95 duration-300"
+    (click)="$event.stopPropagation()">
+    <div class="text-center space-y-2">
+      <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="material-symbols-outlined text-indigo-500 text-3xl">note_add</span>
+      </div>
+      <h2 class="text-2xl font-black text-slate-900">Add Investigation Note</h2>
+      <p class="text-slate-500 text-sm">Document your findings for Case #{{ selectedCaseId() }}.</p>
+    </div>
+    <textarea [(ngModel)]="noteContent"
+      placeholder="Describe your investigation findings..."
+      class="w-full h-32 p-5 bg-slate-50 border-2 border-transparent rounded-[20px] text-sm focus:bg-white focus:border-indigo-400 outline-none transition-all font-medium resize-none"></textarea>
+    <div class="flex items-center gap-4">
+      <button (click)="showNoteModal.set(false)"
+        class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all">
+        Cancel
+      </button>
+      <button (click)="confirmAddNote()"
+        [disabled]="!noteContent().trim() || isProcessing()"
+        class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2">
+        <span *ngIf="isProcessing()" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+        {{ isProcessing() ? 'Saving...' : 'Save Note' }}
+      </button>
     </div>
   </div>
 </div>
