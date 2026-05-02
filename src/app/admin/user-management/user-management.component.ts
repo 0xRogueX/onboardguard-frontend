@@ -43,7 +43,12 @@ export class UserManagementComponent implements OnInit {
 
     this.adminService.getUsers().subscribe({
       next: (response) => {
-        this.users.set(response.data.content);
+        // Robust mapping: handle both 'isActive' and 'active' from backend, defaulting to true
+        const normalized = response.data.content.map(u => ({
+          ...u,
+          isActive: u.isActive ?? (u as any).active ?? true
+        }));
+        this.users.set(normalized);
         this.totalUsers.set(response.data.totalElements);
         this.totalPages.set(response.data.totalPages);
         this.isLoading.set(false);
@@ -87,11 +92,15 @@ export class UserManagementComponent implements OnInit {
   }
 
   toggleStatus(user: UserProfile) {
+    const newStatus = !user.isActive;
     this.actionBusyId.set(user.id);
-    this.adminService.toggleUserStatus(user.id, !user.isActive).subscribe({
+    this.adminService.toggleUserStatus(user.id, newStatus).subscribe({
       next: () => {
         this.actionBusyId.set(null);
-        this.loadUsers();
+        // Force state update to bypass backend Hibernate cache issue
+        this.users.update(users => users.map(u => u.id === user.id ? { ...u, isActive: newStatus } : u));
+        this.successMessage.set(`User successfully ${newStatus ? 'activated' : 'deactivated'}.`);
+        setTimeout(() => this.successMessage.set(''), 3000);
       },
       error: (err) => {
         this.actionBusyId.set(null);
@@ -128,7 +137,11 @@ export class UserManagementComponent implements OnInit {
 
   getUserStatus(user: UserProfile) {
     if (user.locked) return 'Suspended';
-    return user.isActive ? 'Active' : 'Pending';
+    return user.isActive ? 'Active' : 'Deactivated';
+  }
+
+  isSuperAdmin(user: UserProfile) {
+    return user.role === 'ROLE_SUPER_ADMIN' || user.role === 'SUPER_ADMIN';
   }
 
   getClearance(user: UserProfile) {

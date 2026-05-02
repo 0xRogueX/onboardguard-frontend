@@ -39,6 +39,17 @@ export class ReportsComponent implements OnInit {
     ];
   });
 
+  caseBars = computed(() => {
+    const s = this.stats()?.casePerformanceStats;
+    if (!s) return [];
+    return [
+      { label: 'Open Cases', value: s.totalOpenCases },
+      { label: 'Resolved', value: s.totalResolvedCases },
+      { label: 'SLA Breached', value: s.slaBreachedCases },
+      { label: 'Avg Time (hrs)', value: Math.round(s.averageResolutionTimeHours * 10) / 10 }
+    ];
+  });
+
   ngOnInit() {
     this.load();
   }

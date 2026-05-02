@@ -23,7 +23,7 @@
       </div>
     </section>
 
-    <section class="grid grid-cols-2 gap-8">
+    <section class="grid grid-cols-3 gap-8">
       <div class="bg-white rounded-[28px] border border-slate-200 p-6">
         <h2 class="text-lg font-black text-slate-900 mb-6">Candidate Funnel</h2>
         <div class="space-y-4">
@@ -47,6 +47,20 @@
             </div>
             <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
               <div class="h-full bg-emerald-500" [style.width.%]="(item.value / maxValue(alertBars())) * 100"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-[28px] border border-slate-200 p-6">
+        <h2 class="text-lg font-black text-slate-900 mb-6">Case Performance</h2>
+        <div class="space-y-4">
+          <div *ngFor="let item of caseBars()" class="space-y-2">
+            <div class="flex justify-between text-xs font-bold text-slate-500 uppercase tracking-widest">
+              <span>{{item.label}}</span><span>{{item.value}}</span>
+            </div>
+            <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-indigo-500" [style.width.%]="(item.value / maxValue(caseBars())) * 100"></div>
             </div>
           </div>
         </div>

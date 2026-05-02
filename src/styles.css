@@ -14,10 +14,23 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Roboto', 'Inter', sans-serif;
   background-color: var(--color-surface);
   color: var(--color-on-surface);
   margin: 0;
+}
+
+/* Global Typography Overrides */
+.uppercase {
+  text-transform: none !important;
+}
+
+.tracking-widest, .tracking-\[0\.25em\], .tracking-\[0\.2em\], .tracking-\[0\.3em\] {
+  letter-spacing: normal !important;
+}
+
+.text-\[9px\], .text-\[10px\], .text-xs, .text-sm {
+  font-size: 14px !important;
 }
 
 /* Custom Scrollbar */
