@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpEventType } from '@angular/common/http';
 import { Observable, Subject, timeout, filter, map } from 'rxjs';
-import { CandidateStatusDto, DocumentDto } from '../models';
+import { CandidateStatusDto, DocumentDto, CandidateProfileResponseDto } from '../models';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -24,6 +24,11 @@ export class CandidateService {
 
   getProfileStatus(): Observable<ApiResponse<CandidateStatusDto>> {
     return this.http.get<ApiResponse<CandidateStatusDto>>(`${this.apiUrl}/status`)
+      .pipe(timeout(this.defaultRequestTimeoutMs));
+  }
+
+  getProfileDetails(): Observable<ApiResponse<CandidateProfileResponseDto>> {
+    return this.http.get<ApiResponse<CandidateProfileResponseDto>>(this.apiUrl)
       .pipe(timeout(this.defaultRequestTimeoutMs));
   }
 

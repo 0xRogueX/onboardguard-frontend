@@ -173,7 +173,13 @@ export class CandidateDashboardComponent implements OnInit {
       } else if (index < stageIndex) {
         stepStatus = 'completed';
       } else if (index === stageIndex) {
-        stepStatus = 'in-progress';
+        // Only show 'in-progress' if we've actually started (moved past REGISTERED)
+        // or if it's a later stage.
+        if (status === OnboardingStatus.REGISTERED && index === 0) {
+          stepStatus = 'pending';
+        } else {
+          stepStatus = 'in-progress';
+        }
       }
 
       return {
@@ -287,6 +293,14 @@ export class CandidateDashboardComponent implements OnInit {
 
     if (this.isFinalIssue(status)) {
       return 'Action Required';
+    }
+
+    if (status === OnboardingStatus.REGISTERED) {
+      return 'Pending';
+    }
+
+    if (status === OnboardingStatus.PERSONAL_SAVED || status === OnboardingStatus.PROFESSIONAL_SAVED) {
+      return 'In Progress';
     }
 
     return this.formatStatus(status);

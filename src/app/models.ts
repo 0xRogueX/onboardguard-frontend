@@ -111,3 +111,41 @@ export interface DashboardStatsDto {
   categoryHitFrequency: Record<string, number>;
   pendingMakerCheckerRequests: number;
 }
+
+export interface PersonalDetails {
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  dateOfBirth: string;
+  gender: string;
+  nationality: string;
+  panNumber?: string;
+  adhaarNumber?: string;
+  passportNumber?: string;
+  addressLine1: string;
+  addressCity: string;
+  addressState: string;
+  addressPincode: string;
+  addressCountry?: string;
+}
+
+export interface ProfessionalDetails {
+  currentOrganization?: string;
+  cinNumber?: string;
+  dinNumber?: string;
+  currentDesignation?: string;
+  totalExperienceYears?: number;
+  previousOrganization?: string;
+  previousDesignation?: string;
+  vendorCompanyName?: string;
+  vendorGstNumber?: string;
+  highestQualification?: string;
+  universityName?: string;
+  graduationYear?: number;
+}
+
+export interface CandidateProfileResponseDto {
+  personalDetails: PersonalDetails;
+  professionalDetails: ProfessionalDetails;
+  onboardingStatus: OnboardingStatus;
+}

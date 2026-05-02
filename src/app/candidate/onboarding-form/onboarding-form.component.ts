@@ -37,6 +37,7 @@ export class CandidateOnboardingFormComponent implements OnInit {
   isLoading = signal(false);
   successMessage = signal('');
   errorMessage = signal('');
+  todayDate = new Date().toISOString().split('T')[0];
 
   private fb = inject(FormBuilder);
   private candidateService = inject(CandidateService);
@@ -61,21 +62,38 @@ export class CandidateOnboardingFormComponent implements OnInit {
     });
 
     this.professionalForm = this.fb.group({
-      currentOrganization: [''],
+      currentOrganization: ['', Validators.required],
       cinNumber: [''],
       dinNumber: [''],
-      currentDesignation: [''],
-      totalExperienceYears: [0],
+      currentDesignation: ['', Validators.required],
+      totalExperienceYears: [0, [Validators.required, Validators.min(0)]],
       previousOrganization: [''],
       previousDesignation: [''],
       vendorCompanyName: [''],
       vendorGstNumber: [''],
-      highestQualification: [''],
-      universityName: [''],
-      graduationYear: [null]
+      highestQualification: ['', Validators.required],
+      universityName: ['', Validators.required],
+      graduationYear: [null, Validators.required]
     });
 
+    await this.loadProfileDetails();
     await this.syncProgressFromBackend();
+  }
+
+  async loadProfileDetails() {
+    try {
+      const res = await firstValueFrom(this.candidateService.getProfileDetails());
+      if (res.success && res.data) {
+        if (res.data.personalDetails) {
+          this.personalForm.patchValue(res.data.personalDetails);
+        }
+        if (res.data.professionalDetails) {
+          this.professionalForm.patchValue(res.data.professionalDetails);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load profile details', err);
+    }
   }
 
   onFileSelected(event: any) {
@@ -113,20 +131,42 @@ export class CandidateOnboardingFormComponent implements OnInit {
         this.errorMessage.set('Please fill all required fields correctly.');
         return;
       }
-      await this.savePersonalDetails();
+      // Save and then move to next
+      const saved = await this.savePersonalDetails(false);
+      if (saved) this.currentStep.set(2);
     } else if (this.currentStep() === 2) {
       if (this.professionalForm.invalid) {
         this.professionalForm.markAllAsTouched();
         this.errorMessage.set('Please fill all required fields correctly.');
         return;
       }
-      await this.saveProfessionalDetails();
+      // Save and then move to next
+      const saved = await this.saveProfessionalDetails(false);
+      if (saved) this.currentStep.set(3);
     } else if (this.currentStep() === 3) {
       if (!this.selectedFile()) {
         this.errorMessage.set('Please choose a document from your system before continuing.');
         return;
       }
-      await this.uploadSelectedDocument();
+      const uploaded = await this.uploadSelectedDocument(false);
+      if (uploaded) this.currentStep.set(4);
+    }
+  }
+
+  async saveStep() {
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    if (this.currentStep() === 1) {
+      await this.savePersonalDetails(true);
+    } else if (this.currentStep() === 2) {
+      await this.saveProfessionalDetails(true);
+    } else if (this.currentStep() === 3) {
+      if (!this.selectedFile()) {
+        this.errorMessage.set('Please select a file first.');
+        return;
+      }
+      await this.uploadSelectedDocument(true);
     }
   }
 
@@ -163,38 +203,40 @@ export class CandidateOnboardingFormComponent implements OnInit {
     return file ? `Upload ${file.name}` : 'Choose file from system';
   }
 
-  private async savePersonalDetails() {
+  private async savePersonalDetails(showSuccess = true): Promise<boolean> {
     this.isLoading.set(true);
     try {
       await firstValueFrom(this.candidateService.updatePersonalDetails(this.buildPersonalDetailsPayload()));
-      this.currentStep.update(s => Math.max(s, 2));
-      this.successMessage.set('Personal details saved successfully.');
+      if (showSuccess) this.successMessage.set('Personal details saved successfully.');
       this.candidateService.notifyProfileUpdated();
-      void this.syncProgressFromBackend(2);
+      void this.syncProgressFromBackend(this.currentStep());
+      return true;
     } catch (err: any) {
       this.errorMessage.set(this.getRequestErrorMessage(err, 'Failed to save personal details.'));
+      return false;
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  private async saveProfessionalDetails() {
+  private async saveProfessionalDetails(showSuccess = true): Promise<boolean> {
     this.isLoading.set(true);
     try {
       const payload = this.buildProfessionalDetailsPayload();
       await firstValueFrom(this.candidateService.updateProfessionalDetails(payload));
-      this.currentStep.update(s => Math.max(s, 3));
-      this.successMessage.set('Professional details saved successfully.');
+      if (showSuccess) this.successMessage.set('Professional details saved successfully.');
       this.candidateService.notifyProfileUpdated();
-      void this.syncProgressFromBackend(3);
+      void this.syncProgressFromBackend(this.currentStep());
+      return true;
     } catch (err: any) {
       this.errorMessage.set(this.getRequestErrorMessage(err, 'Failed to save professional details.'));
+      return false;
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  private async uploadSelectedDocument() {
+  private async uploadSelectedDocument(showSuccess = true): Promise<boolean> {
     this.isLoading.set(true);
     try {
       await firstValueFrom(this.candidateService.uploadDocument(this.selectedFile()!, this.documentType()));
@@ -203,12 +245,13 @@ export class CandidateOnboardingFormComponent implements OnInit {
       if (input?.nativeElement) {
         input.nativeElement.value = '';
       }
-      this.currentStep.update(s => Math.max(s, 4));
-      this.successMessage.set('Document uploaded successfully.');
+      if (showSuccess) this.successMessage.set('Document uploaded successfully.');
       this.candidateService.notifyProfileUpdated();
-      void this.syncProgressFromBackend(4);
+      void this.syncProgressFromBackend(this.currentStep());
+      return true;
     } catch (err: any) {
       this.errorMessage.set(this.getRequestErrorMessage(err, 'Failed to upload document.'));
+      return false;
     } finally {
       this.isLoading.set(false);
     }
