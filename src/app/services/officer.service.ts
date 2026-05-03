@@ -102,6 +102,31 @@ export interface CaseNote {
   createdAt?: string;
 }
 
+export interface MatchDetail {
+  watchlistEntryId: number;
+  watchlistPrimaryName: string;
+  watchlistCategory: string;
+  watchlistSeverity: string;
+  watchlistSourceName: string;
+  matchType: string;
+  candidateFieldValue: string;
+  watchlistFieldValue: string;
+  similarityScore?: number;
+  scoreContribution: number;
+}
+
+export interface ScreeningResult {
+  screeningResultId: number;
+  candidateId: number;
+  riskScore: number;
+  riskLevel: string;
+  status: string;
+  matches: MatchDetail[];
+  totalEntriesChecked: number;
+  screeningStartedAt: string;
+  screeningCompletedAt: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -233,5 +258,12 @@ export class OfficerService {
   /** Add an investigation note to a case */
   addCaseNote(caseId: number, content: string): Observable<ApiResponse<CaseNote>> {
     return this.http.post<ApiResponse<CaseNote>>(`${this.apiUrl}/cases/${caseId}/notes`, { content });
+  }
+
+  // ─── SCREENING RESULTS ──────────────────────────────────────────────────
+  
+  /** Get latest screening result for a candidate */
+  getLatestScreeningResult(candidateId: number): Observable<ApiResponse<ScreeningResult>> {
+    return this.http.get<ApiResponse<ScreeningResult>>(`http://localhost:8080/api/v1/screening/candidates/${candidateId}/latest`);
   }
 }

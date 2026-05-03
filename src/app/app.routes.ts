@@ -41,8 +41,7 @@ export const routes: Routes = [
       { path: 'reports', loadComponent: () => import('./admin/reports/reports.component').then(c => c.ReportsComponent) },
       { path: 'audit', loadComponent: () => import('./admin/audit-timeline/audit-timeline.component').then(c => c.AuditTimelineComponent) },
       { path: 'approvals', loadComponent: () => import('./admin/approval-dashboard/approval-dashboard.component').then(c => c.ApprovalDashboardComponent) },
-      { path: 'watchlist', loadComponent: () => import('./admin/watchlist/watchlist.component').then(c => c.WatchlistComponent) },
-      { path: 'emergency', loadComponent: () => import('./admin/emergency-control/emergency-control.component').then(c => c.EmergencyControlComponent) }
+      { path: 'watchlist', loadComponent: () => import('./admin/watchlist/watchlist.component').then(c => c.WatchlistComponent) }
     ]
   },
   {

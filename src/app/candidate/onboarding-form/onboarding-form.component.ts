@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild, inject, signal, ChangeDetectionStrategy, viewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject, signal, ChangeDetectionStrategy, viewChild, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CandidateService } from '../../services/candidate.service';
@@ -39,6 +39,14 @@ export class CandidateOnboardingFormComponent implements OnInit {
   errorMessage = signal('');
   todayDate = new Date().toISOString().split('T')[0];
 
+  // Save states
+  isPersonalSaved = signal(false);
+  isProfessionalSaved = signal(false);
+
+  // Uploaded documents tracking
+  uploadedDocTypes = signal<string[]>([]);
+  uploadedFilenames = signal<Record<string, string>>({});
+
   private fb = inject(FormBuilder);
   private candidateService = inject(CandidateService);
   private router = inject(Router);
@@ -77,8 +85,71 @@ export class CandidateOnboardingFormComponent implements OnInit {
     });
 
     await this.loadProfileDetails();
+    await this.loadUploadedDocuments();
     await this.syncProgressFromBackend();
+
+    // Reset saved state on value changes
+    this.personalForm.valueChanges.subscribe(() => {
+      this.isPersonalSaved.set(false);
+    });
+    this.professionalForm.valueChanges.subscribe(() => {
+      this.isProfessionalSaved.set(false);
+    });
   }
+
+  async loadUploadedDocuments() {
+    try {
+      const res = await firstValueFrom(this.candidateService.getProfileStatus());
+      if (res.success && res.data.documentStatuses) {
+        // Fetch all documents to get filenames
+        this.candidateService.getDocuments().subscribe(docRes => {
+           if (docRes.success) {
+              const nameMap: Record<string, string> = {};
+              docRes.data.forEach(d => {
+                 nameMap[d.candidateDocumentType] = d.originalFilename;
+              });
+              this.uploadedFilenames.update(prev => ({ ...prev, ...nameMap }));
+           }
+        });
+
+        const uploaded = Object.entries(res.data.documentStatuses)
+          .filter(([_, status]) => status === 'APPROVED' || status === 'PENDING')
+          .map(([type, _]) => type);
+        this.uploadedDocTypes.set(uploaded);
+      }
+    } catch (err) {
+      console.error('Failed to load uploaded documents', err);
+    }
+  }
+
+  availableDocuments = computed(() => {
+    const docs = [{ type: 'PASSPORT_SIZE_PHOTO', label: 'Recent Photograph', mandatory: false }];
+    docs.push({ type: 'AADHAAR_CARD', label: 'Aadhaar Card', mandatory: true });
+
+    if (this.personalForm.get('panNumber')?.value) {
+      docs.push({ type: 'PAN_CARD', label: 'PAN Card', mandatory: false });
+    }
+    if (this.personalForm.get('passportNumber')?.value) {
+      docs.push({ type: 'PASSPORT', label: 'Passport', mandatory: false });
+    }
+    if (this.professionalForm.get('highestQualification')?.value) {
+      docs.push({ type: 'HIGHEST_DEGREE_CERTIFICATE', label: 'Degree Certificate', mandatory: false });
+    }
+    if (this.professionalForm.get('totalExperienceYears')?.value > 0) {
+      docs.push({ type: 'LAST_EXPERIENCE_LETTER', label: 'Experience Letter', mandatory: false });
+    }
+    return docs;
+  });
+
+  isDocUploaded(type: string): boolean {
+    return this.uploadedDocTypes().includes(type);
+  }
+
+  allMandatoryDocsUploaded = computed(() => {
+    return this.availableDocuments()
+      .filter((d: { mandatory: boolean }) => d.mandatory)
+      .every((d: { type: string }) => this.isDocUploaded(d.type));
+  });
 
   async loadProfileDetails() {
     try {
@@ -86,9 +157,11 @@ export class CandidateOnboardingFormComponent implements OnInit {
       if (res.success && res.data) {
         if (res.data.personalDetails) {
           this.personalForm.patchValue(res.data.personalDetails);
+          this.isPersonalSaved.set(true);
         }
         if (res.data.professionalDetails) {
           this.professionalForm.patchValue(res.data.professionalDetails);
+          this.isProfessionalSaved.set(true);
         }
       }
     } catch (err) {
@@ -131,25 +204,28 @@ export class CandidateOnboardingFormComponent implements OnInit {
         this.errorMessage.set('Please fill all required fields correctly.');
         return;
       }
-      // Save and then move to next
-      const saved = await this.savePersonalDetails(false);
-      if (saved) this.currentStep.set(2);
+      if (!this.isPersonalSaved()) {
+        const saved = await this.savePersonalDetails(false);
+        if (!saved) return;
+      }
+      this.currentStep.set(2);
     } else if (this.currentStep() === 2) {
       if (this.professionalForm.invalid) {
         this.professionalForm.markAllAsTouched();
         this.errorMessage.set('Please fill all required fields correctly.');
         return;
       }
-      // Save and then move to next
-      const saved = await this.saveProfessionalDetails(false);
-      if (saved) this.currentStep.set(3);
+      if (!this.isProfessionalSaved()) {
+        const saved = await this.saveProfessionalDetails(false);
+        if (!saved) return;
+      }
+      this.currentStep.set(3);
     } else if (this.currentStep() === 3) {
-      if (!this.selectedFile()) {
-        this.errorMessage.set('Please choose a document from your system before continuing.');
+      if (!this.allMandatoryDocsUploaded()) {
+        this.errorMessage.set('Please upload the mandatory Aadhaar Card before continuing.');
         return;
       }
-      const uploaded = await this.uploadSelectedDocument(false);
-      if (uploaded) this.currentStep.set(4);
+      this.currentStep.set(4);
     }
   }
 
@@ -207,6 +283,7 @@ export class CandidateOnboardingFormComponent implements OnInit {
     this.isLoading.set(true);
     try {
       await firstValueFrom(this.candidateService.updatePersonalDetails(this.buildPersonalDetailsPayload()));
+      this.isPersonalSaved.set(true);
       if (showSuccess) this.successMessage.set('Personal details saved successfully.');
       this.candidateService.notifyProfileUpdated();
       void this.syncProgressFromBackend(this.currentStep());
@@ -224,6 +301,7 @@ export class CandidateOnboardingFormComponent implements OnInit {
     try {
       const payload = this.buildProfessionalDetailsPayload();
       await firstValueFrom(this.candidateService.updateProfessionalDetails(payload));
+      this.isProfessionalSaved.set(true);
       if (showSuccess) this.successMessage.set('Professional details saved successfully.');
       this.candidateService.notifyProfileUpdated();
       void this.syncProgressFromBackend(this.currentStep());
@@ -245,6 +323,7 @@ export class CandidateOnboardingFormComponent implements OnInit {
       if (input?.nativeElement) {
         input.nativeElement.value = '';
       }
+      await this.loadUploadedDocuments();
       if (showSuccess) this.successMessage.set('Document uploaded successfully.');
       this.candidateService.notifyProfileUpdated();
       void this.syncProgressFromBackend(this.currentStep());
@@ -252,6 +331,25 @@ export class CandidateOnboardingFormComponent implements OnInit {
     } catch (err: any) {
       this.errorMessage.set(this.getRequestErrorMessage(err, 'Failed to upload document.'));
       return false;
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async uploadDoc(type: string, file: File) {
+    if (!file) return;
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    
+    try {
+      await firstValueFrom(this.candidateService.uploadDocument(file, type));
+      this.successMessage.set(`${type.replace(/_/g, ' ')} uploaded successfully.`);
+      this.uploadedFilenames.update(prev => ({ ...prev, [type]: file.name }));
+      await this.loadUploadedDocuments();
+      this.candidateService.notifyProfileUpdated();
+    } catch (err: any) {
+      this.errorMessage.set(this.getRequestErrorMessage(err, 'Upload failed.'));
     } finally {
       this.isLoading.set(false);
     }

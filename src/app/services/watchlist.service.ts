@@ -57,11 +57,11 @@ export class WatchlistService {
   private http = inject(HttpClient);
   private baseUrl = 'http://localhost:8080/api/v1/watchlist';
 
-  getAllActiveEntries(page = 0, size = 20, category?: string): Observable<ApiResponse<PageResponse<WatchlistEntryResponseDto>>> {
+  getAllActiveEntries(page = 0, size = 20, query?: string, category?: string, severity?: string): Observable<ApiResponse<PageResponse<WatchlistEntryResponseDto>>> {
     let params: any = { page, size };
-    if (category) {
-      params.category = category;
-    }
+    if (query) params.search = query;
+    if (category) params.category = category;
+    if (severity) params.severity = severity;
     return this.http.get<ApiResponse<PageResponse<WatchlistEntryResponseDto>>>(this.baseUrl, { params });
   }
 

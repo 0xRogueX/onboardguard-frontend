@@ -39,6 +39,7 @@ export interface CandidateStatusDto {
   candidateType: string;
   onboardingStatus: OnboardingStatus;
   isSubmitted: boolean;
+  documentStatuses?: Record<string, string>;
 }
 
 export interface DocumentDto {

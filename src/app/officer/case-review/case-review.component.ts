@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { OfficerService, CaseDetail } from '../../services/officer.service';
+import { ScreeningResultModalComponent } from '../screening-result-modal/screening-result-modal.component';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-case-review',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ScreeningResultModalComponent],
   templateUrl: './case-review.component.html',
   styleUrl: './case-review.component.css'
 })
@@ -30,6 +31,10 @@ export class CaseReviewComponent implements OnInit {
   selectedCaseId = signal<number | null>(null);
   escalationReason = '';
   isProcessing = signal(false);
+
+  // Screening modal
+  showScreeningModal = signal(false);
+  screeningCandidateId = signal<number | null>(null);
 
   // Note modal
   showNoteModal = signal(false);
@@ -103,6 +108,11 @@ export class CaseReviewComponent implements OnInit {
     this.selectedCaseId.set(caseId);
     this.noteContent = '';
     this.showNoteModal.set(true);
+  }
+
+  openScreeningModal(candidateId: number) {
+    this.screeningCandidateId.set(candidateId);
+    this.showScreeningModal.set(true);
   }
 
   confirmAddNote() {

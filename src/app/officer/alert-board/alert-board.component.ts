@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { OfficerService, AlertDetail } from '../../services/officer.service';
 import { AuthService } from '../../services/auth.service';
+import { ScreeningResultModalComponent } from '../screening-result-modal/screening-result-modal.component';
 
 @Component({
   selector: 'app-alert-board',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ScreeningResultModalComponent],
   templateUrl: './alert-board.component.html',
   styleUrl: './alert-board.component.css'
 })
@@ -30,6 +31,10 @@ export class AlertBoardComponent implements OnInit {
   selectedAlertId = signal<number | null>(null);
   dismissReason = signal('');
   isProcessing = signal(false);
+
+  // Screening modal
+  showScreeningModal = signal(false);
+  screeningCandidateId = signal<number | null>(null);
 
   ngOnInit() {
     if (!this.isL1()) {
@@ -89,6 +94,11 @@ export class AlertBoardComponent implements OnInit {
     this.selectedAlertId.set(alertId);
     this.dismissReason.set('');
     this.showDismissModal.set(true);
+  }
+
+  openScreeningModal(candidateId: number) {
+    this.screeningCandidateId.set(candidateId);
+    this.showScreeningModal.set(true);
   }
 
   confirmDismiss() {

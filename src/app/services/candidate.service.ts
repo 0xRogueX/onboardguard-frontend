@@ -60,6 +60,11 @@ export class CandidateService {
       .pipe(timeout(this.uploadRequestTimeoutMs));
   }
 
+  getDocuments(): Observable<ApiResponse<DocumentDto[]>> {
+    return this.http.get<ApiResponse<DocumentDto[]>>(this.apiUrl + '/documents')
+      .pipe(timeout(this.defaultRequestTimeoutMs));
+  }
+
   getRejectedDocuments(): Observable<ApiResponse<DocumentDto[]>> {
     return this.http.get<ApiResponse<DocumentDto[]>>(`${this.apiUrl}/documents?status=REJECTED`)
       .pipe(timeout(this.defaultRequestTimeoutMs));

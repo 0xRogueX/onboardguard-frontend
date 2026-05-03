@@ -2,8 +2,9 @@ import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { OfficerService, DocumentVerificationDashboard } from '../../services/officer.service';
+import { OfficerService, DocumentVerificationDashboard, ScreeningResult } from '../../services/officer.service';
 import { AuthService } from '../../services/auth.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-investigation-workspace',
@@ -23,6 +24,7 @@ export class InvestigationWorkspaceComponent implements OnInit {
   backLabel = computed(() => this.isL1() ? 'Queue' : 'Escalated');
 
   candidate = signal<DocumentVerificationDashboard | null>(null);
+  screeningResult = signal<ScreeningResult | null>(null);
   isLoading = signal(true);
   errorMessage = signal('');
   successMessage = signal('');
@@ -45,13 +47,36 @@ export class InvestigationWorkspaceComponent implements OnInit {
   loadCandidateDetails(id: number) {
     this.isLoading.set(true);
     this.errorMessage.set('');
+
     this.officerService.getCandidateDetails(id).subscribe({
       next: (res) => {
         this.candidate.set(res.data);
-        this.isLoading.set(false);
+        
+        // Screening only relevant for Acknowledged Alerts, Cases, or Post-Verification stages
+        const status = res.data.status;
+        const skipScreening = ['DOCUMENTS_UPLOADED', 'DOCUMENTS_UNDER_REVIEW', 'DOCUMENTS_REJECTED'].includes(status);
+        
+        if (!skipScreening || !this.isL1()) {
+          this.fetchScreeningResult(id);
+        } else {
+          this.isLoading.set(false);
+        }
       },
       error: (err) => {
-        this.errorMessage.set(err?.error?.message || 'Failed to load candidate details.');
+        this.errorMessage.set(err?.error?.message || 'Failed to load investigation data.');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  private fetchScreeningResult(id: number) {
+    this.officerService.getLatestScreeningResult(id).subscribe({
+      next: (res) => {
+        this.screeningResult.set(res.data);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.screeningResult.set(null);
         this.isLoading.set(false);
       }
     });
@@ -132,5 +157,21 @@ export class InvestigationWorkspaceComponent implements OnInit {
 
   approvedDocsCount(): number {
     return this.candidate()?.documents?.filter(d => d.status === 'APPROVED').length ?? 0;
+  }
+
+  getRiskBadgeClass(level: string): string {
+    switch (level?.toUpperCase()) {
+      case 'CRITICAL': return 'bg-red-600 text-white shadow-red-200';
+      case 'HIGH': return 'bg-rose-500 text-white shadow-rose-200';
+      case 'MEDIUM': return 'bg-amber-500 text-white shadow-amber-200';
+      case 'LOW': return 'bg-emerald-500 text-white shadow-emerald-200';
+      default: return 'bg-slate-400 text-white';
+    }
+  }
+
+  getMatchScoreColor(score: number): string {
+    if (score >= 80) return 'text-rose-600';
+    if (score >= 50) return 'text-amber-600';
+    return 'text-emerald-600';
   }
 }

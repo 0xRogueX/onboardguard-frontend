@@ -127,4 +127,13 @@ export class AdminService {
       params: { entityType, entityId }
     }).pipe(timeout(this.timeoutMs));
   }
+
+  getAuditLogs(page = 0, size = 20, entityType?: string, action?: string, performedBy?: number): Observable<ApiResponse<PageResponse<AuditLogDto>>> {
+    let params: any = { page, size };
+    if (entityType) params.entityType = entityType;
+    if (action) params.action = action;
+    if (performedBy) params.performedBy = performedBy;
+    return this.http.get<ApiResponse<PageResponse<AuditLogDto>>>(`${this.baseUrl}/audit-logs`, { params })
+      .pipe(timeout(this.timeoutMs));
+  }
 }

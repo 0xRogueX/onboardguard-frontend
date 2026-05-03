@@ -85,6 +85,7 @@ export class AlertDashboardComponent implements OnInit {
       case 'FORM_SUBMITTED': return 'bg-blue-50 text-blue-600 border-blue-100';
       case 'DOCUMENTS_UPLOADED': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
       case 'DOCUMENTS_UNDER_REVIEW': return 'bg-yellow-50 text-yellow-600 border-yellow-100';
+      case 'DOCUMENTS_REJECTED': return 'bg-rose-50 text-rose-600 border-rose-100';
       default: return 'bg-slate-50 text-slate-600 border-slate-100';
     }
   }

@@ -17,6 +17,11 @@ export class CandidateLoginComponent {
 
   isLoading = signal(false);
   errorMessage = signal('');
+  showPassword = signal(false);
+
+  togglePassword() {
+    this.showPassword.update(v => !v);
+  }
 
   credentials = {
     email: '',

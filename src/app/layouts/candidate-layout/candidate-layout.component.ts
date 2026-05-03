@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -12,6 +12,12 @@ import { AuthService } from '../../services/auth.service';
 })
 export class CandidateLayoutComponent {
   private authService = inject(AuthService);
+  private router = inject(Router);
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/candidate/login']);
+  }
 
   currentUser = computed(() => this.authService.currentUser());
   displayName = computed(() => this.currentUser()?.fullName || 'Candidate');

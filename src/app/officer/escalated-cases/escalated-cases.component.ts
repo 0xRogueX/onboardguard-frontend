@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { OfficerService, CaseDetail } from '../../services/officer.service';
 import { AuthService } from '../../services/auth.service';
+import { ScreeningResultModalComponent } from '../screening-result-modal/screening-result-modal.component';
 
 @Component({
   selector: 'app-escalated-cases',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, ScreeningResultModalComponent],
   templateUrl: './escalated-cases.component.html',
   styleUrl: './escalated-cases.component.css'
 })
@@ -35,6 +36,10 @@ export class EscalatedCasesComponent implements OnInit {
   // Note modal
   showNoteModal = signal(false);
   noteContent = signal('');
+
+  // Screening modal
+  showScreeningModal = signal(false);
+  screeningCandidateId = signal<number | null>(null);
 
   ngOnInit() {
     if (!this.isL2()) {
@@ -111,6 +116,11 @@ export class EscalatedCasesComponent implements OnInit {
     this.selectedCaseId.set(caseId);
     this.noteContent.set('');
     this.showNoteModal.set(true);
+  }
+
+  openScreeningModal(candidateId: number) {
+    this.screeningCandidateId.set(candidateId);
+    this.showScreeningModal.set(true);
   }
 
   confirmAddNote() {
