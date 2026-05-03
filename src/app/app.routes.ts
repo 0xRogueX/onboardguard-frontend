@@ -61,7 +61,9 @@ export const routes: Routes = [
       // L1 — Screening alert board (claim alerts, convert to case, dismiss)
       { path: 'alert-board', loadComponent: () => import('./officer/alert-board/alert-board.component').then(c => c.AlertBoardComponent) },
       // L2 — Escalated cases (final approve/reject decision)
-      { path: 'escalated', loadComponent: () => import('./officer/escalated-cases/escalated-cases.component').then(c => c.EscalatedCasesComponent) }
+      { path: 'escalated', loadComponent: () => import('./officer/escalated-cases/escalated-cases.component').then(c => c.EscalatedCasesComponent) },
+      // L2 — Watchlist Database
+      { path: 'watchlist', loadComponent: () => import('./admin/watchlist/watchlist.component').then(c => c.WatchlistComponent) }
     ]
   }
 ];

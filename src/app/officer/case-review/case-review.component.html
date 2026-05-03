@@ -97,7 +97,6 @@
           <button *ngIf="canEscalate(c)"
             (click)="openEscalateModal(c.id)"
             class="px-6 py-3 bg-amber-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-900/20 hover:bg-amber-600 transition-all active:scale-95 flex items-center gap-2">
-            <span class="material-symbols-outlined text-sm">escalator_warning</span>
             Escalate to L2
           </button>
         </div>
@@ -119,8 +118,6 @@
   <div class="bg-white rounded-[32px] max-w-md w-full p-10 space-y-8 shadow-2xl animate-in zoom-in-95 duration-300"
     (click)="$event.stopPropagation()">
     <div class="text-center space-y-2">
-      <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
-        <span class="material-symbols-outlined text-amber-500 text-3xl">escalator_warning</span>
       </div>
       <h2 class="text-2xl font-black text-slate-900">Escalate to L2 Checker</h2>
       <p class="text-slate-500 text-sm">Provide a detailed reason for escalating this case. This will be reviewed by an L2 officer.</p>
@@ -143,7 +140,7 @@
       </button>
     </div>
   </div>
-</div>
+
 
 <!-- Add Note Modal -->
 <div *ngIf="showNoteModal()"

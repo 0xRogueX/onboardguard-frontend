@@ -71,7 +71,7 @@ export class AuthService {
   logout() {
     const role = this.userRole();
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('onboardguard_user');
+      sessionStorage.removeItem('onboardguard_user');
     }
     this.userSignal.set(null);
 
@@ -88,7 +88,7 @@ export class AuthService {
       role: this.normalizeRole(user.role)
     };
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem('onboardguard_user', JSON.stringify(normalizedUser));
+      sessionStorage.setItem('onboardguard_user', JSON.stringify(normalizedUser));
     }
     this.userSignal.set(normalizedUser);
     this.redirectBasedOnRole(normalizedUser.role);
@@ -96,7 +96,7 @@ export class AuthService {
 
   private loadUserFromStorage(): User | null {
     if (isPlatformBrowser(this.platformId)) {
-      const data = localStorage.getItem('onboardguard_user');
+      const data = sessionStorage.getItem('onboardguard_user');
       if (!data) {
         return null;
       }

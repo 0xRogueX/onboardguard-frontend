@@ -46,50 +46,54 @@
     <p class="text-slate-500 text-sm mt-1">All submitted applications have been processed. Check back later.</p>
   </div>
 
-  <!-- Candidate Cards Grid -->
-  <div *ngIf="!isLoading() && pendingCandidates().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div *ngFor="let candidate of pendingCandidates()"
-      class="group bg-white rounded-[28px] p-8 border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-indigo-900/5 hover:-translate-y-1 transition-all duration-500 relative overflow-hidden">
-
-      <!-- Decorative background icon -->
-      <div class="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-        <span class="material-symbols-outlined text-indigo-50 text-7xl">verified_user</span>
-      </div>
-
-      <div class="relative space-y-6">
-        <!-- Avatar + Status -->
-        <div class="flex items-start justify-between">
-          <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center font-black text-xl text-indigo-600">
-            {{ getInitials(candidate) }}
-          </div>
-          <div class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border"
-            [ngClass]="getStatusColor(candidate.status)">
-            {{ formatStatus(candidate.status) }}
-          </div>
-        </div>
-
-        <!-- Name + Email -->
-        <div>
-          <h3 class="text-lg font-black text-slate-900">{{ candidate.firstName }} {{ candidate.lastName }}</h3>
-          <p class="text-slate-400 text-sm font-medium truncate">{{ candidate.email }}</p>
-        </div>
-
-        <!-- Submitted Date + Claim Button -->
-        <div class="pt-4 border-t border-slate-50 flex items-center justify-between">
-          <div class="space-y-1">
-            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest block">Submitted</span>
-            <span class="text-xs font-bold text-slate-600">{{ candidate.formSubmittedAt | date:'MMM d, h:mm a' }}</span>
-          </div>
-          <button
-            [disabled]="isClaiming() === candidate.candidateId"
-            (click)="claimApplication(candidate.candidateId)"
-            class="px-6 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-900/20 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2">
-            <span *ngIf="isClaiming() === candidate.candidateId"
-              class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-            {{ isClaiming() === candidate.candidateId ? 'Claiming...' : 'Claim' }}
-          </button>
-        </div>
-      </div>
+  <!-- Candidate Queue List View -->
+  <div *ngIf="!isLoading() && pendingCandidates().length > 0" class="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden animate-in fade-in zoom-in-95 duration-700">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50/50 border-b border-slate-100">
+            <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Candidate</th>
+            <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Current Status</th>
+            <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Submission Date</th>
+            <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Verification</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          <tr *ngFor="let candidate of pendingCandidates()" class="hover:bg-slate-50/80 transition-all group">
+            <td class="px-8 py-6">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center font-black text-sm text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500">
+                  {{ getInitials(candidate) }}
+                </div>
+                <div>
+                  <h3 class="text-sm font-black text-slate-900 leading-none mb-1.5">{{ candidate.firstName }} {{ candidate.lastName }}</h3>
+                  <p class="text-[11px] text-slate-400 font-medium tracking-tight">{{ candidate.email }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-8 py-6 text-center">
+              <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border inline-block"
+                [ngClass]="getStatusColor(candidate.status)">
+                {{ formatStatus(candidate.status) }}
+              </span>
+            </td>
+            <td class="px-8 py-6 text-center">
+              <span class="text-xs font-bold text-slate-600 tracking-tight">{{ candidate.formSubmittedAt | date:'MMM d, yyyy · h:mm a' }}</span>
+            </td>
+            <td class="px-8 py-6 text-right">
+              <button
+                [disabled]="isClaiming() === candidate.candidateId"
+                (click)="claimApplication(candidate.candidateId)"
+                class="px-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-slate-900/10 hover:bg-indigo-600 hover:shadow-indigo-600/20 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2 ml-auto">
+                <span *ngIf="isClaiming() === candidate.candidateId"
+                  class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                {{ isClaiming() === candidate.candidateId ? 'Processing...' : 'Verify Case' }}
+                <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 

@@ -1,10 +1,17 @@
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 
 export const roleGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
+  const platformId = inject(PLATFORM_ID);
+
+  // If we're on the server, we don't know if the user is authenticated (localStorage is browser-only)
+  if (!isPlatformBrowser(platformId)) {
+    return true;
+  }
 
   const expectedRoles = route.data['roles'] as Array<string>;
   const userRole = authService.userRole();

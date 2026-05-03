@@ -51,6 +51,15 @@ export class CandidateService {
       .pipe(timeout(this.uploadRequestTimeoutMs));
   }
 
+  reUploadDocument(file: File, documentType: string): Observable<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('candidateDocumentType', documentType);
+
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/documents/re-upload`, formData)
+      .pipe(timeout(this.uploadRequestTimeoutMs));
+  }
+
   getRejectedDocuments(): Observable<ApiResponse<DocumentDto[]>> {
     return this.http.get<ApiResponse<DocumentDto[]>>(`${this.apiUrl}/documents?status=REJECTED`)
       .pipe(timeout(this.defaultRequestTimeoutMs));

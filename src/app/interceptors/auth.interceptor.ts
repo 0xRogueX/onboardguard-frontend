@@ -4,9 +4,9 @@ import { isPlatformBrowser } from '@angular/common';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const platformId = inject(PLATFORM_ID);
-  
+
   if (isPlatformBrowser(platformId)) {
-    const userData = localStorage.getItem('onboardguard_user');
+    const userData = sessionStorage.getItem('onboardguard_user');
     if (userData) {
       const user = JSON.parse(userData);
       const authReq = req.clone({

@@ -83,6 +83,11 @@ export class CandidateDashboardComponent implements OnInit {
   steps = computed<Step[]>(() => this.buildSteps(this.profileStatus()?.onboardingStatus || null));
   updates = computed<Update[]>(() => this.buildUpdates());
 
+  showReuploadAlert = computed(() => 
+    this.profileStatus()?.onboardingStatus === OnboardingStatus.DOCUMENTS_REJECTED && 
+    this.rejectedDocuments().length > 0
+  );
+
   ngOnInit() {
     this.candidateService.profileUpdated$
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -216,7 +221,7 @@ export class CandidateDashboardComponent implements OnInit {
 
   private getProgressPercent(): number {
     const status = this.profileStatus()?.onboardingStatus;
-    if (!status) {
+    if (!status || status === OnboardingStatus.REGISTERED) {
       return 0;
     }
 
@@ -237,6 +242,7 @@ export class CandidateDashboardComponent implements OnInit {
       case OnboardingStatus.REGISTERED:
         return 0;
       case OnboardingStatus.PERSONAL_SAVED:
+        return 0;
       case OnboardingStatus.PROFESSIONAL_SAVED:
         return 1;
       case OnboardingStatus.DOCUMENTS_UPLOADED:
@@ -331,7 +337,7 @@ export class CandidateDashboardComponent implements OnInit {
       case OnboardingStatus.CASE_IN_REVIEW:
         return 'A compliance case is being reviewed by the officer team.';
       case OnboardingStatus.APPROVED:
-        return '🎉 Your onboarding has been approved. Welcome aboard!';
+        return 'Your onboarding has been approved. Welcome aboard!';
       case OnboardingStatus.FLAGGED:
         return 'Your profile has been flagged for manual compliance review.';
       case OnboardingStatus.DOCUMENTS_REJECTED:

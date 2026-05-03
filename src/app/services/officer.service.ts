@@ -170,6 +170,11 @@ export class OfficerService {
     return this.http.post<ApiResponse<number>>(`${this.apiUrl}/alerts/${alertId}/convert`, {});
   }
 
+  /** Get all alerts that have breached SLA */
+  getBreachedAlerts(): Observable<ApiResponse<AlertDetail[]>> {
+    return this.http.get<ApiResponse<AlertDetail[]>>(`${this.apiUrl}/alerts/breached`);
+  }
+
   // ─── CASES – L1 (OPEN QUEUE) ───────────────────────────────────────────────
 
   /** Get all OPEN cases available for L1 */

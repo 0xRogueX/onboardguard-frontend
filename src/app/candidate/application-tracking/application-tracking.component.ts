@@ -55,18 +55,27 @@ export class ApplicationTrackingComponent implements OnInit {
     this.currentStatus.set(this.formatStatus(status));
     const completedThrough = this.getCompletedStep(status, isSubmitted);
     const issueStep = this.getIssueStep(status);
-    this.steps.update(steps => steps.map((step, index) => ({
-      ...step,
-      status: issueStep !== null && index === issueStep
-        ? 'error'
-        : this.isFinalSuccess(status)
-          ? 'completed'
-        : index < completedThrough
-          ? 'completed'
-          : index === completedThrough
-            ? 'in-progress'
-            : 'pending'
-    })));
+    
+    this.steps.update(steps => steps.map((step, index) => {
+      let stepStatus: 'completed' | 'in-progress' | 'error' | 'pending' = 'pending';
+
+      if (issueStep !== null && index === issueStep) {
+        stepStatus = 'error';
+      } else if (this.isFinalSuccess(status)) {
+        stepStatus = 'completed';
+      } else if (index < completedThrough) {
+        stepStatus = 'completed';
+      } else if (index === completedThrough) {
+        // Only show 'in-progress' if we've actually moved past REGISTERED
+        if (status === OnboardingStatus.REGISTERED && index === 0) {
+          stepStatus = 'pending';
+        } else {
+          stepStatus = 'in-progress';
+        }
+      }
+
+      return { ...step, status: stepStatus };
+    }));
   }
 
   private getCompletedStep(status: OnboardingStatus, isSubmitted: boolean) {
@@ -74,6 +83,7 @@ export class ApplicationTrackingComponent implements OnInit {
       case OnboardingStatus.REGISTERED:
         return 0;
       case OnboardingStatus.PERSONAL_SAVED:
+        return 0;
       case OnboardingStatus.PROFESSIONAL_SAVED:
         return 1;
       case OnboardingStatus.DOCUMENTS_UPLOADED:
