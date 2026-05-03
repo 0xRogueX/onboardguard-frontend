@@ -11,7 +11,7 @@
       </div>
       
       <!-- SLA Breach Notification -->
-      <div class="relative">
+      <div class="relative" *ngIf="isL1()">
         <button (click)="toggleBreachedList()" 
           class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center relative">
           <span class="material-symbols-outlined text-slate-400" [ngClass]="{'text-red-500 animate-pulse': breachedAlerts().length > 0}">notifications</span>

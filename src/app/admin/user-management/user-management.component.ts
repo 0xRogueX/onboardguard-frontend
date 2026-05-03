@@ -140,8 +140,8 @@ export class UserManagementComponent implements OnInit {
     return user.isActive ? 'Active' : 'Deactivated';
   }
 
-  isSuperAdmin(user: UserProfile) {
-    return user.role === 'ROLE_SUPER_ADMIN' || user.role === 'SUPER_ADMIN';
+  isProtectedAdmin(user: UserProfile) {
+    return user.role === 'ROLE_SUPER_ADMIN' || user.role === 'SUPER_ADMIN' || user.role === 'ROLE_ADMIN' || user.role === 'ADMIN';
   }
 
   getClearance(user: UserProfile) {

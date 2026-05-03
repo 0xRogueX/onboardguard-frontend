@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { DocumentDto, CaseDto, AlertDto } from '../models';
 
 export interface ApiResponse<T> {
@@ -133,6 +133,8 @@ export interface ScreeningResult {
 export class OfficerService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:8080/api/v1/officer';
+
+  public refreshSlaBreaches$ = new Subject<void>();
 
   // ─── DOCUMENT VERIFICATION (L1) ───────────────────────────────────────────
 

@@ -33,6 +33,11 @@ export class OfficerLayoutComponent implements OnInit, OnDestroy {
     this.checkBreachedAlerts();
     // Poll every 3 minutes (matching backend scheduler)
     this.pollInterval = setInterval(() => this.checkBreachedAlerts(), 180000);
+
+    // Refresh immediately when alerts are converted/claimed
+    this.officerService.refreshSlaBreaches$.subscribe(() => {
+      this.checkBreachedAlerts();
+    });
   }
 
   ngOnDestroy() {

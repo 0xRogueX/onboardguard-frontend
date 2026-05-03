@@ -65,6 +65,7 @@ export class AlertBoardComponent implements OnInit {
       next: (res) => {
         this.isAcknowledging.set(null);
         this.successMessage.set(`Alert claimed and converted to Case #${res.data}.`);
+        this.officerService.refreshSlaBreaches$.next();
         this.router.navigate(['/officer/case-review']);
       },
       error: (err) => {
@@ -80,6 +81,7 @@ export class AlertBoardComponent implements OnInit {
       next: (res) => {
         this.isProcessing.set(false);
         this.successMessage.set(`Alert converted to Case #${res.data}. View in Open Cases.`);
+        this.officerService.refreshSlaBreaches$.next();
         this.loadAlerts();
         setTimeout(() => this.successMessage.set(''), 5000);
       },

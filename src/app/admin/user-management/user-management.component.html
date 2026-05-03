@@ -116,10 +116,10 @@
               </div>
             </td>
             <td class="px-8 py-5 text-right">
-              <button *ngIf="!isSuperAdmin(user)" type="button" (click)="toggleStatus(user)" [disabled]="actionBusyId() === user.id" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-black disabled:opacity-50">
+              <button *ngIf="!isProtectedAdmin(user)" type="button" (click)="toggleStatus(user)" [disabled]="actionBusyId() === user.id" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-black disabled:opacity-50">
                 {{ user.isActive ? 'Deactivate' : 'Activate' }}
               </button>
-              <span *ngIf="isSuperAdmin(user)" class="text-[10px] font-bold text-slate-400">System Protected</span>
+              <span *ngIf="isProtectedAdmin(user)" class="text-[10px] font-bold text-slate-400">System Protected</span>
             </td>
           </tr>
         </tbody>
