@@ -19,6 +19,8 @@ export class InvestigationWorkspaceComponent implements OnInit {
   private authService = inject(AuthService);
 
   isL1 = computed(() => this.authService.currentUser()?.role === 'L1_OFFICER');
+  backLink = computed(() => this.isL1() ? '/officer/alerts' : '/officer/escalated');
+  backLabel = computed(() => this.isL1() ? 'Queue' : 'Escalated');
 
   candidate = signal<DocumentVerificationDashboard | null>(null);
   isLoading = signal(true);
@@ -36,7 +38,7 @@ export class InvestigationWorkspaceComponent implements OnInit {
     if (id) {
       this.loadCandidateDetails(+id);
     } else {
-      this.router.navigate(['/officer/alerts']);
+      this.router.navigate([this.backLink()]);
     }
   }
 

@@ -9,9 +9,9 @@
   class="p-8 flex flex-col items-center justify-center h-full">
   <span class="material-symbols-outlined text-red-300 text-6xl mb-4">error</span>
   <p class="text-slate-700 font-bold">{{ errorMessage() }}</p>
-  <button routerLink="/officer/alerts"
+  <button [routerLink]="backLink()"
     class="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest">
-    Back to Queue
+    Back to {{ backLabel() }}
   </button>
 </div>
 
@@ -31,7 +31,7 @@
   <!-- Page Header -->
   <div class="flex items-center justify-between flex-wrap gap-4">
     <div class="flex items-center gap-4">
-      <button routerLink="/officer/alerts"
+      <button [routerLink]="backLink()"
         class="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm">
         <span class="material-symbols-outlined block">arrow_back</span>
       </button>

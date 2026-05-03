@@ -28,12 +28,12 @@ export class CaseReviewComponent implements OnInit {
   // Escalate modal
   showEscalateModal = signal(false);
   selectedCaseId = signal<number | null>(null);
-  escalationReason = signal('');
+  escalationReason = '';
   isProcessing = signal(false);
 
   // Note modal
   showNoteModal = signal(false);
-  noteContent = signal('');
+  noteContent = '';
 
   ngOnInit() {
     if (!this.isL1()) {
@@ -76,12 +76,12 @@ export class CaseReviewComponent implements OnInit {
 
   openEscalateModal(caseId: number) {
     this.selectedCaseId.set(caseId);
-    this.escalationReason.set('');
+    this.escalationReason = '';
     this.showEscalateModal.set(true);
   }
 
   confirmEscalate() {
-    const reason = this.escalationReason().trim();
+    const reason = this.escalationReason.trim();
     if (reason.length < 10) return;
     this.isProcessing.set(true);
     this.officerService.escalateCase(this.selectedCaseId()!, null, reason).subscribe({
@@ -101,12 +101,12 @@ export class CaseReviewComponent implements OnInit {
 
   openNoteModal(caseId: number) {
     this.selectedCaseId.set(caseId);
-    this.noteContent.set('');
+    this.noteContent = '';
     this.showNoteModal.set(true);
   }
 
   confirmAddNote() {
-    const note = this.noteContent().trim();
+    const note = this.noteContent.trim();
     if (!note) return;
     this.isProcessing.set(true);
     this.officerService.addCaseNote(this.selectedCaseId()!, note).subscribe({

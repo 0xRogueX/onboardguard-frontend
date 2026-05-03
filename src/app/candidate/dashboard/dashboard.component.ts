@@ -83,8 +83,8 @@ export class CandidateDashboardComponent implements OnInit {
   steps = computed<Step[]>(() => this.buildSteps(this.profileStatus()?.onboardingStatus || null));
   updates = computed<Update[]>(() => this.buildUpdates());
 
-  showReuploadAlert = computed(() => 
-    this.profileStatus()?.onboardingStatus === OnboardingStatus.DOCUMENTS_REJECTED && 
+  showReuploadAlert = computed(() =>
+    this.profileStatus()?.onboardingStatus === OnboardingStatus.DOCUMENTS_REJECTED &&
     this.rejectedDocuments().length > 0
   );
 
@@ -271,18 +271,19 @@ export class CandidateDashboardComponent implements OnInit {
       case OnboardingStatus.DOCUMENTS_REJECTED:
         return 2;
       case OnboardingStatus.FLAGGED:
+        return 4; // Screening step
       case OnboardingStatus.REJECTED:
-        return 4; // step 4 = Screening
+        return 5; // Final decision step
       default:
         return null;
     }
   }
 
-  private isFinalSuccess(status: OnboardingStatus | null | undefined): boolean {
+  public isFinalSuccess(status: OnboardingStatus | null | undefined): boolean {
     return status === OnboardingStatus.APPROVED;
   }
 
-  private isFinalIssue(status: OnboardingStatus | null | undefined): boolean {
+  public isFinalIssue(status: OnboardingStatus | null | undefined): boolean {
     return status === OnboardingStatus.FLAGGED
       || status === OnboardingStatus.DOCUMENTS_REJECTED
       || status === OnboardingStatus.REJECTED;
@@ -295,6 +296,10 @@ export class CandidateDashboardComponent implements OnInit {
 
     if (this.isFinalSuccess(status)) {
       return 'Approved';
+    }
+
+    if (status === OnboardingStatus.REJECTED) {
+      return 'Rejected';
     }
 
     if (this.isFinalIssue(status)) {
