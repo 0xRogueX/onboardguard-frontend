@@ -60,19 +60,24 @@
                       {{ getConfigGroup(configs().indexOf(config)).get('configValue')?.value }}
                     </span>
                   </div>
-                  <input type="range" min="0" max="100" [value]="config.configValue" (input)="getConfigGroup(configs().indexOf(config)).patchValue({configValue: $any($event.target).value})" class="w-full accent-slate-900">
+                  <input type="range" 
+                    [min]="config.configKey.includes('BONUS') ? 0 : (config.configKey.includes('SLA') ? 0 : 0)" 
+                    [max]="config.configKey.includes('BONUS') ? 30 : (config.configKey.includes('SLA') ? 100 : 1)" 
+                    [step]="config.configKey.includes('BONUS') || config.configKey.includes('SLA') ? 1 : 0.01" 
+                    [value]="config.configValue" (input)="getConfigGroup(configs().indexOf(config)).patchValue({configValue: $any($event.target).value})" class="w-full accent-slate-900">
                 </div>
 
                 <select *ngSwitchCase="'select'" [value]="config.configValue" (change)="getConfigGroup(configs().indexOf(config)).patchValue({configValue: $any($event.target).value})" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white">
-                  <option [value]="config.configValue">{{config.configValue}}</option>
-                  <option value="BASIC">BASIC</option>
-                  <option value="ADVANCED">ADVANCED</option>
+                  <option *ngFor="let opt of getStrategyOptions()" [value]="opt">{{opt}}</option>
                 </select>
 
                 <input *ngSwitchCase="'number'" type="number" [value]="config.configValue" (input)="getConfigGroup(configs().indexOf(config)).patchValue({configValue: $any($event.target).value})" class="w-full px-4 py-3 rounded-xl border border-slate-200">
 
                 <input *ngSwitchDefault type="text" formControlName="configValue" class="w-full px-4 py-3 rounded-xl border border-slate-200">
               </ng-container>
+              <div *ngIf="configErrors()[config.id]" class="text-[9px] text-rose-600 font-black uppercase tracking-wider mt-1 px-1">
+                {{ configErrors()[config.id] }}
+              </div>
             </div>
 
             <div [formGroup]="getConfigGroup(configs().indexOf(config))">

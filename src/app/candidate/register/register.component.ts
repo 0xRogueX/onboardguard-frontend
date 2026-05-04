@@ -27,8 +27,17 @@ export class CandidateRegisterComponent {
   };
 
   onRegister() {
-    if (!this.registrationData.fullName || !this.registrationData.email || !this.registrationData.password || !this.registrationData.phone) {
+    const { fullName, email, password, phone } = this.registrationData;
+
+    if (!fullName || !email || !password || !phone) {
       this.errorMessage.set('All fields are required.');
+      return;
+    }
+
+    // Phone validation (10 digits)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phone)) {
+      this.errorMessage.set('Phone number must be exactly 10 digits.');
       return;
     }
 

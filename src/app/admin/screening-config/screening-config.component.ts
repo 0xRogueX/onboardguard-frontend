@@ -21,6 +21,7 @@ export class ScreeningConfigComponent implements OnInit {
   isSaving = signal<Record<number, boolean>>({});
   errorMessage = signal('');
   successMessage = signal('');
+  configErrors = signal<Record<number, string>>({});
   totalConfigs = computed(() => this.configs().length);
   sensitiveConfigs = computed(() => this.configs().filter(config => config.isSensitive).length);
   screeningConfigs = computed(() => this.configs().filter(config => config.category === 'SCREENING').length);
@@ -56,8 +57,15 @@ export class ScreeningConfigComponent implements OnInit {
     this.isLoading.set(true);
     this.adminService.getSystemConfigs().subscribe({
       next: (response) => {
-        this.configs.set(response.data);
-        this.rebuildForm(response.data);
+        const excludedKeys = [
+          'STORAGE_PRESIGNED_URL_TTL_MINUTES',
+          'AUTH_JWT_EXPIRATION_MS',
+          'JWT_EXPIRATION_MS',
+          'SCREENING_AUTO_REJECT_ENABLED'
+        ];
+        const filteredConfigs = response.data.filter(c => !excludedKeys.includes(c.configKey));
+        this.configs.set(filteredConfigs);
+        this.rebuildForm(filteredConfigs);
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -69,12 +77,72 @@ export class ScreeningConfigComponent implements OnInit {
 
   saveConfig(config: SystemConfigDto, index: number) {
     const control = this.configArray.at(index);
+    const valueStr = String(control.get('configValue')?.value ?? '');
+    const value = parseFloat(valueStr);
+    // Clear previous errors
+    this.configErrors.set({ ...this.configErrors(), [config.id]: '' });
+    this.errorMessage.set('');
+
+    // Range Validation (0.0 to 1.0)
+    const rangeKeys = [
+      'SCREENING_THRESHOLD_FUZZY',
+      'SCREENING_MULT_NAME_ONLY',
+      'SCREENING_MULT_NAME_ONE_ID',
+      'SCREENING_MULT_NAME_TWO_IDS',
+      'SCREENING_MULT_NAME_ORG',
+      'SCREENING_MULT_NAME_ORG_DESIGNATION',
+      'SCREENING_THRESHOLD_MEDIUM',
+      'SCREENING_THRESHOLD_HIGH'
+    ];
+
+    if (rangeKeys.includes(config.configKey)) {
+      if (isNaN(value) || value < 0.0 || value > 1.0) {
+        this.configErrors.set({ ...this.configErrors(), [config.id]: 'Value must be between 0.0 and 1.0' });
+        return;
+      }
+    }
+
+    // Bonus Validation (0 to 30)
+    if (config.configKey.includes('BONUS')) {
+      if (isNaN(value) || value < 0 || value > 30) {
+        this.configErrors.set({ ...this.configErrors(), [config.id]: 'Bonus must be between 0 and 30' });
+        return;
+      }
+    }
+
+    // SLA Validation (0 to 100)
+    if (config.configKey.includes('SLA')) {
+      if (isNaN(value) || value < 0 || value > 100) {
+        this.configErrors.set({ ...this.configErrors(), [config.id]: 'SLA must be between 0 and 100 hours' });
+        return;
+      }
+    }
+
+    // High > Medium relationship check
+    if (config.configKey === 'SCREENING_THRESHOLD_MEDIUM' || config.configKey === 'SCREENING_THRESHOLD_HIGH') {
+      const mediumIdx = this.configs().findIndex(c => c.configKey === 'SCREENING_THRESHOLD_MEDIUM');
+      const highIdx = this.configs().findIndex(c => c.configKey === 'SCREENING_THRESHOLD_HIGH');
+
+      if (mediumIdx !== -1 && highIdx !== -1) {
+        const mediumVal = config.configKey === 'SCREENING_THRESHOLD_MEDIUM' ? value : parseFloat(this.configArray.at(mediumIdx).get('configValue')?.value);
+        const highVal = config.configKey === 'SCREENING_THRESHOLD_HIGH' ? value : parseFloat(this.configArray.at(highIdx).get('configValue')?.value);
+
+        if (highVal <= mediumVal) {
+          this.configErrors.set({ ...this.configErrors(), [config.id]: 'High Threshold must be > Medium Threshold' });
+          return;
+        }
+      }
+    }
+
     const payload = {
-      configValue: String(control.get('configValue')?.value ?? ''),
+      configValue: valueStr,
       description: String(control.get('description')?.value ?? '')
     };
 
     this.isSaving.set({ ...this.isSaving(), [config.id]: true });
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
     this.adminService.updateSystemConfig(config.id, payload).subscribe({
       next: (response) => {
         this.successMessage.set(response.message || 'Configuration change submitted for approval.');
@@ -102,7 +170,7 @@ export class ScreeningConfigComponent implements OnInit {
     if (config.configKey === 'ACTIVE_SCREENING_STRATEGY') return 'select';
     if (config.configKey === 'SCREENING_AUTO_REJECT_ENABLED') return 'toggle';
     if (config.configType === 'BOOLEAN') return 'toggle';
-    if (config.configKey.includes('THRESHOLD') || config.configKey.includes('SLA')) return 'range';
+    if (config.configKey.includes('THRESHOLD') || config.configKey.includes('MULT_NAME') || config.configKey.includes('BONUS') || config.configKey.includes('SLA')) return 'range';
     if (config.configType === 'INTEGER' || config.configType === 'DOUBLE' || config.configType === 'BIG_DECIMAL') return 'number';
     return 'text';
   }
@@ -112,7 +180,7 @@ export class ScreeningConfigComponent implements OnInit {
   }
 
   getStrategyOptions() {
-    return ['BASIC', 'ADVANCED'];
+    return ['ADVANCED', 'BASIC'];
   }
 
   private rebuildForm(configs: SystemConfigDto[]) {

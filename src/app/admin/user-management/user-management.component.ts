@@ -29,7 +29,7 @@ export class UserManagementComponent implements OnInit {
   officerForm = this.fb.group({
     fullName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
-    phone: [''],
+    phone: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
     role: ['ROLE_OFFICER_L1' as 'ROLE_OFFICER_L1' | 'ROLE_OFFICER_L2', Validators.required]
   });
 

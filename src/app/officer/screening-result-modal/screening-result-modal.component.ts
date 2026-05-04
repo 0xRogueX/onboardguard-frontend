@@ -34,7 +34,7 @@ import { OfficerService, ScreeningResult } from '../../services/officer.service'
               <div class="p-6 rounded-[24px] bg-slate-50 border border-slate-100">
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Overall Risk Score</p>
                 <div class="flex items-end gap-2">
-                  <span class="text-4xl font-black text-slate-900">{{result()?.riskScore}}%</span>
+                  <span class="text-4xl font-black text-slate-900">{{formatValue(result()?.riskScore)}}</span>
                   <span class="text-xs font-bold mb-1" [ngClass]="getRiskLevelClass(result()?.riskLevel || '')">
                     {{result()?.riskLevel}}
                   </span>
@@ -76,7 +76,7 @@ import { OfficerService, ScreeningResult } from '../../services/officer.service'
                     </div>
                   </div>
                   <div class="text-right">
-                    <div class="text-lg font-black text-slate-900">{{match.similarityScore}}%</div>
+                    <div class="text-lg font-black text-slate-900">{{formatPercent(match.similarityScore)}}</div>
                     <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Match Score</div>
                   </div>
                 </div>
@@ -146,6 +146,21 @@ export class ScreeningResultModalComponent {
   close() {
     this.show = false;
     this.closed.emit();
+  }
+
+  formatPercent(val: any): string {
+    if (val === undefined || val === null) return '0%';
+    const num = parseFloat(val);
+    if (isNaN(num)) return '0%';
+    // If val is <= 1, assume it's a decimal (0.93), so multiply by 100
+    const percent = num <= 1 ? num * 100 : num;
+    return percent.toFixed(2) + '%';
+  }
+
+  formatValue(val: any): string {
+    if (val === undefined || val === null) return '0';
+    const num = parseFloat(val);
+    return isNaN(num) ? '0' : num.toFixed(1);
   }
 
   getRiskLevelClass(level: string): string {

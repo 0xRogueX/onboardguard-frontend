@@ -29,7 +29,7 @@ import { AdminService, AuditLogDto } from '../../services/admin.service';
 
     <!-- Filter Bar -->
     <div class="flex flex-wrap items-center gap-4">
-      <!-- Entity Type Filter -->
+      <!-- Entity Module Filter -->
       <div class="min-w-[200px]">
         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Entity Module</label>
         <select 
@@ -66,16 +66,6 @@ import { AdminService, AuditLogDto } from '../../services/admin.service';
           <option value="ALERT_ESCALATED">Alert Escalated</option>
           <option value="CASE_RESOLVED">Case Resolved</option>
         </select>
-      </div>
-
-      <!-- Performed By (User ID) -->
-      <div class="min-w-[150px]">
-        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Actor ID</label>
-        <input type="number" 
-          [(ngModel)]="filterPerformedBy"
-          (ngModelChange)="onFilterChange()"
-          placeholder="e.g. 102"
-          class="w-full px-5 py-3 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-indigo-500 outline-none transition-all shadow-inner">
       </div>
 
       <div class="ml-auto pt-6">
@@ -126,12 +116,11 @@ import { AdminService, AuditLogDto } from '../../services/admin.service';
             </td>
             <td class="p-6">
               <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center font-black text-slate-500 text-[10px]">
-                  {{log.performedBy}}
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                  <span class="material-symbols-outlined text-xs">account_circle</span>
                 </div>
                 <div>
-                  <div class="text-xs font-bold text-slate-700">ID #{{log.performedBy}}</div>
-                  <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{log.actorRole}}</div>
+                  <div class="text-xs font-bold text-slate-700">{{log.actorRole}}</div>
                 </div>
               </div>
             </td>

@@ -39,9 +39,9 @@ export class CandidateOnboardingFormComponent implements OnInit {
   errorMessage = signal('');
   todayDate = new Date().toISOString().split('T')[0];
 
-  // Save states
   isPersonalSaved = signal(false);
   isProfessionalSaved = signal(false);
+  existingDob: string | null = null;
 
   // Uploaded documents tracking
   uploadedDocTypes = signal<string[]>([]);
@@ -56,12 +56,11 @@ export class CandidateOnboardingFormComponent implements OnInit {
       firstName: ['', Validators.required],
       middleName: [''],
       lastName: ['', Validators.required],
-      dateOfBirth: ['', Validators.required],
+      dateOfBirth: ['', [Validators.required, this.ageValidator]],
       gender: ['', Validators.required],
       nationality: ['', Validators.required],
-      panNumber: [''],
-      adhaarNumber: [''],
-      passportNumber: [''],
+      panNumber: ['', [Validators.required, Validators.pattern('^[A-Z]{5}[0-9]{4}[A-Z]{1}$')]],
+      adhaarNumber: ['', [Validators.required, Validators.pattern('^[0-9]{12}$')]],
       addressLine1: ['', Validators.required],
       addressCity: ['', Validators.required],
       addressState: ['', Validators.required],
@@ -127,10 +126,7 @@ export class CandidateOnboardingFormComponent implements OnInit {
     docs.push({ type: 'AADHAAR_CARD', label: 'Aadhaar Card', mandatory: true });
 
     if (this.personalForm.get('panNumber')?.value) {
-      docs.push({ type: 'PAN_CARD', label: 'PAN Card', mandatory: false });
-    }
-    if (this.personalForm.get('passportNumber')?.value) {
-      docs.push({ type: 'PASSPORT', label: 'Passport', mandatory: false });
+      docs.push({ type: 'PAN_CARD', label: 'PAN Card', mandatory: true });
     }
     if (this.professionalForm.get('highestQualification')?.value) {
       docs.push({ type: 'HIGHEST_DEGREE_CERTIFICATE', label: 'Degree Certificate', mandatory: false });
@@ -156,6 +152,7 @@ export class CandidateOnboardingFormComponent implements OnInit {
       const res = await firstValueFrom(this.candidateService.getProfileDetails());
       if (res.success && res.data) {
         if (res.data.personalDetails) {
+          this.existingDob = res.data.personalDetails.dateOfBirth;
           this.personalForm.patchValue(res.data.personalDetails);
           this.isPersonalSaved.set(true);
         }
@@ -406,18 +403,29 @@ export class CandidateOnboardingFormComponent implements OnInit {
       firstName: this.normalizeRequiredText(value.firstName),
       middleName: this.normalizeOptionalText(value.middleName),
       lastName: this.normalizeRequiredText(value.lastName),
-      dateOfBirth: value.dateOfBirth,
+      dateOfBirth: value.dateOfBirth, 
       gender: this.normalizeRequiredText(value.gender),
       nationality: this.normalizeRequiredText(value.nationality),
-      panNumber: this.normalizeOptionalText(value.panNumber),
-      adhaarNumber: this.normalizeOptionalText(value.adhaarNumber),
-      passportNumber: this.normalizeOptionalText(value.passportNumber),
+      panNumber: this.normalizeRequiredText(value.panNumber),
+      adhaarNumber: this.normalizeRequiredText(value.adhaarNumber),
       addressLine1: this.normalizeRequiredText(value.addressLine1),
       addressCity: this.normalizeRequiredText(value.addressCity),
       addressState: this.normalizeRequiredText(value.addressState),
       addressPincode: this.normalizeRequiredText(value.addressPincode),
       addressCountry: this.normalizeOptionalText(value.addressCountry)
     };
+  }
+
+  private ageValidator(control: any) {
+    if (!control.value) return null;
+    const dob = new Date(control.value);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age >= 18 ? null : { underage: true };
   }
 
   private normalizeRequiredText(value: unknown): string {

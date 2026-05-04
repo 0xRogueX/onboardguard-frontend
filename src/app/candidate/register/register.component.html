@@ -70,7 +70,7 @@
           
           <!-- Full Name -->
           <div class="space-y-2">
-            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Full Name</label>
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Full Name <span class="text-red-500">*</span></label>
             <div class="relative">
               <input type="text" name="fullName" [(ngModel)]="registrationData.fullName" placeholder="Full name" required
                 class="w-full pl-4 pr-10 py-3.5 bg-white border border-slate-200 rounded-xl text-sm focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/10 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400 shadow-sm">
@@ -80,7 +80,7 @@
 
           <!-- Email -->
           <div class="space-y-2">
-            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address</label>
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address <span class="text-red-500">*</span></label>
             <div class="relative">
               <input type="email" name="email" [(ngModel)]="registrationData.email" placeholder="name@company.com" required
                 class="w-full pl-4 pr-10 py-3.5 bg-white border border-slate-200 rounded-xl text-sm focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/10 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400 shadow-sm">
@@ -90,17 +90,19 @@
 
           <!-- Phone Number -->
           <div class="space-y-2">
-            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Phone Number</label>
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Phone Number <span class="text-red-500">*</span></label>
             <div class="relative">
-              <input type="tel" name="phone" [(ngModel)]="registrationData.phone" placeholder="+1 (555) 000-0000" required
+              <input type="tel" name="phone" [(ngModel)]="registrationData.phone" placeholder="10-digit number" required
                 class="w-full pl-4 pr-10 py-3.5 bg-white border border-slate-200 rounded-xl text-sm focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/10 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400 shadow-sm">
               <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">call</span>
             </div>
           </div>
 
+
+
           <!-- Password -->
           <div class="space-y-2">
-            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Password <span class="text-red-500">*</span></label>
             <div class="relative">
               <input type="password" name="password" [(ngModel)]="registrationData.password" placeholder="••••••••" required
                 class="w-full pl-4 pr-10 py-3.5 bg-white border border-slate-200 rounded-xl text-sm focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/10 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400 shadow-sm">
