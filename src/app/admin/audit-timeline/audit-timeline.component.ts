@@ -39,6 +39,9 @@ import { AdminService, AuditLogDto } from '../../services/admin.service';
           <option value="">All Modules</option>
           <option value="CANDIDATE">Candidate</option>
           <option value="OFFICER">Officer</option>
+          <option value="USER">User / Admin</option>
+          <option value="ALERT">Alerts</option>
+          <option value="CASE">Cases</option>
           <option value="WATCHLIST">Watchlist</option>
           <option value="SYSTEM_CONFIG">System Config</option>
           <option value="APPROVAL">Approvals</option>
@@ -53,13 +56,15 @@ import { AdminService, AuditLogDto } from '../../services/admin.service';
           (change)="onFilterChange()"
           class="w-full px-5 py-3 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:border-indigo-500 outline-none transition-all cursor-pointer">
           <option value="">All Actions</option>
-          <option value="CREATE">Create</option>
-          <option value="UPDATE">Update</option>
-          <option value="DELETE">Delete</option>
-          <option value="LOGIN">Login</option>
-          <option value="VERIFY">Verify</option>
-          <option value="REJECT">Reject</option>
-          <option value="ESCALATE">Escalate</option>
+          <option value="USER_CREATED">User Created</option>
+          <option value="USER_ACTIVATED">User Activated</option>
+          <option value="USER_DEACTIVATED">User Deactivated</option>
+          <option value="UPDATE_REQUESTED">Update Requested</option>
+          <option value="MAKER_CHECKER_APPROVED">Approved (Maker-Checker)</option>
+          <option value="MAKER_CHECKER_REJECTED">Rejected (Maker-Checker)</option>
+          <option value="ALERT_DISMISSED">Alert Dismissed</option>
+          <option value="ALERT_ESCALATED">Alert Escalated</option>
+          <option value="CASE_RESOLVED">Case Resolved</option>
         </select>
       </div>
 
@@ -220,6 +225,7 @@ export class AuditTimelineComponent implements OnInit {
       this.filterPerformedBy
     ).subscribe({
       next: (res) => {
+        console.log('Audit Logs Response:', res);
         if (res.success && res.data) {
           this.logs.set(res.data.content);
           this.totalElements.set(res.data.totalElements);

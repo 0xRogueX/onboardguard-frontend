@@ -123,7 +123,7 @@ export class AdminService {
   }
 
   getAuditTimeline(entityType: string, entityId: number): Observable<ApiResponse<AuditLogDto[]>> {
-    return this.http.get<ApiResponse<AuditLogDto[]>>(`${this.baseUrl}/audit-logs/timeline`, {
+    return this.http.get<ApiResponse<AuditLogDto[]>>(`${this.baseUrl}/audit-logs`, {
       params: { entityType, entityId }
     }).pipe(timeout(this.timeoutMs));
   }
