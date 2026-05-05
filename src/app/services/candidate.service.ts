@@ -16,7 +16,8 @@ export interface ApiResponse<T> {
 export class CandidateService {
   private readonly apiUrl = 'http://localhost:8080/api/v1/candidates/profile';
   private readonly defaultRequestTimeoutMs = 30000;   // 30s for forms
-  private readonly uploadRequestTimeoutMs  = 120000;  // 2 min for Cloudinary upload
+  private readonly
+    = 120000;  // 2 min for Cloudinary upload
   private http = inject(HttpClient);
   private profileUpdatedSubject = new Subject<void>();
 
